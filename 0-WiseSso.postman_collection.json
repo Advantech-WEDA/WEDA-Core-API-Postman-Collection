@@ -1,0 +1,336 @@
+{
+  "info": {
+    "_postman_id": "19fb4fa3-c6c1-47c1-936a-f887fd4d662d",
+    "name": "0-WiseSso",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54060136",
+    "_collection_link": "https://go.postman.co/collection/54060136-19fb4fa3-c6c1-47c1-936a-f887fd4d662d?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "External Login 302",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.cookies.clear();",
+              "",
+              "const oidcIdentity = pm.environment.get('OIDC.Identity');",
+              "console.log('OIDC.Identity value:', oidcIdentity);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 302', () => pm.expect(pm.response.code).to.eql(302));",
+              "if (pm.response.code === 302) {",
+              "  const location = pm.response.headers.get('Location');",
+              "  if (location) {",
+              "    const url = new URL(location);",
+              "    pm.environment.set('client_id', url.searchParams.get('client_id'));",
+              "    const acrValues = url.searchParams.get('acr_values');",
+              "    if (acrValues) {",
+              "      const decoded = decodeURIComponent(acrValues);",
+              "      const tenantMatch = decoded.match(/tenantId:([a-f0-9\\-]+)/i);",
+              "      if (tenantMatch) pm.environment.set('tenantId', tenantMatch[1]);",
+              "    }",
+              "    pm.environment.set('redirect_uri', url.searchParams.get('redirect_uri'));",
+              "  }",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{idsbaseurl}}/portal/external-login?returnUrl={{idsbaseurl}}/central/weda",
+          "host": [
+            "{{idsbaseurl}}"
+          ],
+          "path": [
+            "portal",
+            "external-login"
+          ],
+          "query": [
+            {
+              "key": "returnUrl",
+              "value": "{{idsbaseurl}}/central/weda"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Account Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.expect(pm.response.code).to.eql(200));",
+              "const setCookie = pm.response.headers.get('Set-Cookie');",
+              "if (setCookie && setCookie.includes('OIDC.Identity=')) {",
+              "  const cookies = setCookie.split(',');",
+              "  const identityCookie = cookies.find(c => c.includes('OIDC.Identity='));",
+              "  if (identityCookie) {",
+              "    const value = identityCookie.split(';')[0].split('=')[1];",
+              "    pm.environment.set('OIDC.Identity', value);",
+              "  }",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "packages": {},
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Cookie",
+            "value": "Path=/platform/sso; HttpOnly=true; Secure=true"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"account\": \"{{login}}\",\n  \"password\": \"{{password}}\",\n  \"tenantId\": \"{{tenantId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{idsbaseurl}}/identity/api/v1.0/account/login",
+          "host": [
+            "{{idsbaseurl}}"
+          ],
+          "path": [
+            "identity",
+            "api",
+            "v1.0",
+            "account",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "External Login 200",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const oidcIdentity = pm.environment.get('OIDC.Identity');",
+              "console.log('OIDC.Identity value:', oidcIdentity);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.expect(pm.response.code).to.eql(200));",
+              "if (pm.response.code === 200) {",
+              "  const html = pm.response.text();",
+              "  const actionMatch = html.match(/<form[^>]*action=[\"']([^\"']*)[\"']/i);",
+              "  if (actionMatch) pm.environment.set('form_action', actionMatch[1]);",
+              "  const inputMatches = html.match(/<input[^>]*name=[\"']([^\"']*)[\"'][^>]*value=[\"']([^\"']*)[\"']/gi);",
+              "  if (inputMatches) {",
+              "    inputMatches.forEach(match => {",
+              "      const nameMatch = match.match(/name=[\"']([^\"']*)[\"']/i);",
+              "      const valueMatch = match.match(/value=[\"']([^\"']*)[\"']/i);",
+              "      if (nameMatch && valueMatch) {",
+              "        pm.environment.set(nameMatch[1], valueMatch[1]);",
+              "      }",
+              "    });",
+              "  }",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "OIDC.Identity={{OIDC.Identity}}"
+          }
+        ],
+        "url": {
+          "raw": "{{idsbaseurl}}/portal/external-login?returnUrl={{idsbaseurl}}/central/weda",
+          "host": [
+            "{{idsbaseurl}}"
+          ],
+          "path": [
+            "portal",
+            "external-login"
+          ],
+          "query": [
+            {
+              "key": "returnUrl",
+              "value": "{{idsbaseurl}}/central/weda"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Signin Oidc",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const loginCookie = pm.cookies.get('AdvOidc.Login');",
+              "if (loginCookie) {",
+              "    pm.environment.set('AdvOidc.Login', loginCookie);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "code",
+              "value": "{{code}}"
+            },
+            {
+              "key": "state",
+              "value": "{{state}}"
+            },
+            {
+              "key": "iss",
+              "value": "{{iss}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{form_action}}",
+          "host": [
+            "{{form_action}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "WEDA Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.expect(pm.response.code).to.eql(201));",
+              "const responseJson = pm.response.json();",
+              "Object.keys(responseJson).forEach(key => {",
+              "    pm.environment.set(key, responseJson[key]);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/auth/tokens",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "auth",
+            "tokens"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "pm.cookies.clear();",
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

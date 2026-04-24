@@ -1,0 +1,358 @@
+{
+  "info": {
+    "_postman_id": "1288fb39-c202-41d4-986c-44d7cdce63f8",
+    "name": "1-Org&ClientCrend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54060136",
+    "_collection_link": "https://go.postman.co/collection/54060136-1288fb39-c202-41d4-986c-44d7cdce63f8?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Org List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.expect(pm.response.code).to.eql(200));",
+              "const responseJson = pm.response.json();",
+              "const orgs = responseJson.items;",
+              "const login = pm.environment.get('login');",
+              "const org = orgs.find(o => o.name === login);",
+              "if (org) {",
+              "    pm.environment.set('org_id', org.orgId);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/orgs",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Org Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.expect(pm.response.code).to.eql(201));",
+              "const responseJson = pm.response.json();",
+              "pm.environment.set('org_id', responseJson.orgId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{login}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/orgs",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Org Delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 204', () => pm.expect(pm.response.code).to.eql(204));",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "packages": {},
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Client-Cred Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var response = pm.response.json();",
+              "",
+              "if (response.clientId) {",
+              "    pm.environment.set(\"clientId\", response.clientId);",
+              "}",
+              "if (response.clientSecret) {",
+              "    pm.environment.set(\"clientSecret\", response.clientSecret);",
+              "}",
+              "if (response.clientCredentialId) {",
+              "    pm.environment.set(\"clientCredentialId\", response.clientSecret);",
+              "}",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "packages": {},
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"DataFeed\",\n  \"expiredAt\": \"2030-02-05T05:00:21.396Z\",\n  \"scopes\": [\n    \"dataobject.read\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/oauth2/client-credentials",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "oauth2",
+            "client-credentials"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Client-Cred List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var response = pm.response.json();",
+              "",
+              "if (response.length > 0) {",
+              "    var patId = response[0].clientCredentialId;",
+              "",
+              "    if(patId != null)",
+              "        pm.environment.set(\"clientCredentialId\", patId);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/oauth2/client-credentials",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "oauth2",
+            "client-credentials"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Client-Cred Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/api/v1/pats/{{clientCredentialId}}",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "pats",
+            "{{clientCredentialId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Connect Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.expect(pm.response.code).to.eql(200));",
+              "const responseJson = pm.response.json();",
+              "Object.keys(responseJson).forEach(key => {",
+              "    pm.environment.set('cc_'+ key, responseJson[key]);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "client_credentials",
+              "type": "text",
+              "uuid": "6d9033ab-3ac6-4182-80ff-9c4651591466"
+            },
+            {
+              "key": "client_id",
+              "value": "{{clientId}}",
+              "type": "text",
+              "uuid": "a75d5bff-8cc2-4a96-a690-f6ba0008bee0"
+            },
+            {
+              "key": "client_secret",
+              "value": "{{clientSecret}}",
+              "type": "text",
+              "uuid": "a1976e05-53bc-41a6-9466-e7498296920a"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{idsbaseurl}}/identity/connect/token",
+          "host": [
+            "{{idsbaseurl}}"
+          ],
+          "path": [
+            "identity",
+            "connect",
+            "token"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

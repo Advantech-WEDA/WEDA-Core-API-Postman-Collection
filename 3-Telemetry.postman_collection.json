@@ -1,0 +1,229 @@
+{
+  "info": {
+    "_postman_id": "e29efaad-4d75-4c23-8cc2-65d8fa178313",
+    "name": "3-Telemetry",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54060136",
+    "_collection_link": "https://go.postman.co/collection/54060136-e29efaad-4d75-4c23-8cc2-65d8fa178313?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Sensor Settings Get",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}/telemetry-configs",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}",
+            "telemetry-configs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Sensor Settings Change",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n    {\n        \"enabled\": true,\n        \"deviceName\": \"SystemAgentDeviceConfig\",\n        \"sensors\": [\n            {\n                \"name\": \"cpu.usage1\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 5000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"double\",\n                    \"displayName\": \"SensorInfo DisplayName for cpu.usage\",\n                    \"description\": \"SensorInfo Description for cpu.usage\"\n                }\n            },\n            {\n                \"name\": \"cpu.usage\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 5000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"double\",\n                    \"displayName\": \"SensorInfo DisplayName for cpu.usage\",\n                    \"description\": \"SensorInfo Description for cpu.usage\"\n                }\n            },\n            {\n                \"name\": \"cpu.load.1m\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 10000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"double\",\n                    \"displayName\": \"SensorInfo DisplayName for cpu.load.1m\",\n                    \"description\": \"SensorInfo Description for cpu.load.1m\"\n                }\n            },\n            {\n                \"name\": \"cpu.load.5m\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 10000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"double\",\n                    \"displayName\": \"SensorInfo DisplayName for cpu.load.5m\",\n                    \"description\": \"SensorInfo Description for cpu.load.5m\"\n                }\n            },\n            {\n                \"name\": \"cpu.load.15m\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 10000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"double\",\n                    \"displayName\": \"SensorInfo DisplayName for cpu.load.15m\",\n                    \"description\": \"SensorInfo Description for cpu.load.15m\"\n                }\n            },\n            {\n                \"name\": \"memory.total\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 10000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for memory.total\",\n                    \"description\": \"SensorInfo Description for memory.total\"\n                }\n            },\n            {\n                \"name\": \"memory.available\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 10000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for memory.available\",\n                    \"description\": \"SensorInfo Description for memory.available\"\n                }\n            },\n            {\n                \"name\": \"memory.used\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 10000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for memory.used\",\n                    \"description\": \"SensorInfo Description for memory.used\"\n                }\n            },\n            {\n                \"name\": \"memory.cached\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 10000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for memory.cached\",\n                    \"description\": \"SensorInfo Description for memory.cached\"\n                }\n            },\n            {\n                \"name\": \"disk.root.total\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 30000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for disk.root.total\",\n                    \"description\": \"SensorInfo Description for disk.root.total\"\n                }\n            },\n            {\n                \"name\": \"disk.root.available\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 30000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for disk.root.available\",\n                    \"description\": \"SensorInfo Description for disk.root.available\"\n                }\n            },\n            {\n                \"name\": \"disk.root.used\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 30000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for disk.root.used\",\n                    \"description\": \"SensorInfo Description for disk.root.used\"\n                }\n            },\n            {\n                \"name\": \"disk.root.usage_percent\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 30000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"double\",\n                    \"displayName\": \"SensorInfo DisplayName for disk.root.usage_percent\",\n                    \"description\": \"SensorInfo Description for disk.root.usage_percent\"\n                }\n            },\n            {\n                \"name\": \"network.en0.bytes_sent\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 5000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for network.en0.bytes_sent\",\n                    \"description\": \"SensorInfo Description for network.en0.bytes_sent\"\n                }\n            },\n            {\n                \"name\": \"network.en0.bytes_received\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 5000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for network.en0.bytes_received\",\n                    \"description\": \"SensorInfo Description for network.en0.bytes_received\"\n                }\n            },\n            {\n                \"name\": \"network.en0.packets_sent\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 5000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for network.en0.packets_sent\",\n                    \"description\": \"SensorInfo Description for network.en0.packets_sent\"\n                }\n            },\n            {\n                \"name\": \"network.en0.packets_received\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 5000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for network.en0.packets_received\",\n                    \"description\": \"SensorInfo Description for network.en0.packets_received\"\n                }\n            },\n            {\n                \"name\": \"network.en0.errors\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 25000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"long\",\n                    \"displayName\": \"SensorInfo DisplayName for network.en0.errors\",\n                    \"description\": \"SensorInfo Description for network.en0.errors\"\n                }\n            },\n            {\n                \"name\": \"hwinfo.motherboard\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 60000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"string\",\n                    \"displayName\": \"SensorInfo DisplayName for hwinfo.motherboard\",\n                    \"description\": \"SensorInfo Description for hwinfo.motherboard\"\n                }\n            },\n            {\n                \"name\": \"temperature.cpU-therm\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 1000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"double\",\n                    \"displayName\": \"CPU Thermal\",\n                    \"description\": \"CPU thermal sensor temperature\"\n                }\n            },\n            {\n                \"name\": \"temperature.gpU-therm\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 1000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"double\",\n                    \"displayName\": \"GPU Thermal\",\n                    \"description\": \"GPU thermal sensor temperature\"\n                }\n            },\n            {\n                \"name\": \"gpio.isSupported\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"boolean\",\n                    \"displayName\": \"GPIO Supported\",\n                    \"description\": \"GPIO support status\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO2\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO2 State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO2\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO4\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO4 State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO4\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO5\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO5 State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO5\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO6\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO6 State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO6\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO7\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO7 State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO7\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO8\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO8 State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO8\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO9\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO9 State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO9\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO10\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO10 State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO10\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO11_CPU\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO11_CPU State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO11_CPU\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO12_CPU\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO12_CPU State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO12_CPU\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.CN13_GPIO1\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"CN13_GPIO1 State\",\n                    \"description\": \"GPIO pin state for CN13_GPIO1\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.CN13_GPIO7\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"CN13_GPIO7 State\",\n                    \"description\": \"GPIO pin state for CN13_GPIO7\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.CN13_GPIO9\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"CN13_GPIO9 State\",\n                    \"description\": \"GPIO pin state for CN13_GPIO9\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.CN13_GPIO11\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"CN13_GPIO11 State\",\n                    \"description\": \"GPIO pin state for CN13_GPIO11\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.CN13_GPIO12\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"CN13_GPIO12 State\",\n                    \"description\": \"GPIO pin state for CN13_GPIO12\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.CN13_GPIO13\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"CN13_GPIO13 State\",\n                    \"description\": \"GPIO pin state for CN13_GPIO13\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO11_Expender\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO11_Expender State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO11_Expender\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_GPIO12_Expender\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_GPIO12_Expender State\",\n                    \"description\": \"GPIO pin state for UIO_GPIO12_Expender\"\n                }\n            },\n            {\n                \"name\": \"gpio.pin.UIO_ID_SW\",\n                \"config\": {\n                    \"enabled\": true,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"integer\",\n                    \"displayName\": \"UIO_ID_SW State\",\n                    \"description\": \"GPIO pin state for UIO_ID_SW\"\n                }\n            },\n            {\n                \"name\": \"watchdog.isSupported\",\n                \"config\": {\n                    \"enabled\": false,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"boolean\",\n                    \"displayName\": \"Watchdog Supported\",\n                    \"description\": \"Watchdog support status\"\n                }\n            },\n            {\n                \"name\": \"thermalprotection.isSupported\",\n                \"config\": {\n                    \"enabled\": false,\n                    \"interval\": 6000\n                },\n                \"sensorInfo\": {\n                    \"schema\": \"boolean\",\n                    \"displayName\": \"Thermal Protection Supported\",\n                    \"description\": \"Thermal protection support status\"\n                }\n            }\n        ]\n    }\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}/telemetry-configs",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}",
+            "telemetry-configs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Data Points Historical Get",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const now = new Date();",
+              "const start = new Date(now.getTime() - 60 * 60 * 1000);",
+              "const end = new Date(now.getTime() + 1 * 60 * 1000);",
+              "pm.environment.set('startTime', encodeURIComponent(start.toISOString()));",
+              "pm.environment.set('endTime', encodeURIComponent(end.toISOString()));",
+              "",
+              "//pm.environment.set('startTime', '2026-03-24T06%3A41%3A04.231%2B08%3A00');",
+              "//pm.environment.set('endTime', '2026-03-27T06%3A41%3A04.231%2B08%3A00');",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}/inputs/data-objects?start={{startTime}}&end={{endTime}}&limit=1000",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}",
+            "inputs",
+            "data-objects"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "{{startTime}}"
+            },
+            {
+              "key": "skipCount",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": null,
+              "value": "",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "end",
+              "value": "{{endTime}}"
+            },
+            {
+              "key": "limit",
+              "value": "1000"
+            },
+            {
+              "key": "maxResultCount",
+              "value": "100",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Data Points Latest Get by User Token",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}/inputs/data-objects/latest",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}",
+            "inputs",
+            "data-objects",
+            "latest"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Data Points Latest Get by Client Token",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{cc_access_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}/inputs/data-objects/latest",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}",
+            "inputs",
+            "data-objects",
+            "latest"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,296 @@
+{
+  "info": {
+    "_postman_id": "307aca4a-75e1-4eaa-add9-19e20f2f8b4a",
+    "name": "2-Provisioning&Activation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54060136",
+    "_collection_link": "https://go.postman.co/collection/54060136-307aca4a-75e1-4eaa-add9-19e20f2f8b4a?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Token Refresh",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', () => pm.expect(pm.response.code).to.eql(201));",
+              "const responseJson = pm.response.json();",
+              "Object.keys(responseJson).forEach(key => {",
+              "    pm.environment.set(key, responseJson[key]);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{accessToken}}\",\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/auth/tokens?grant_type=refresh_token",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "auth",
+            "tokens"
+          ],
+          "query": [
+            {
+              "key": "grant_type",
+              "value": "refresh_token"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Node Register",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "function randomString(length) {",
+              "    // You can customize the character set here",
+              "    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+              "    var result = '';",
+              "    for (var i = 0; i < length; i++) {",
+              "        result += chars.charAt(Math.floor(Math.random() * chars.length));",
+              "    }",
+              "    return result;",
+              "}",
+              "",
+              "// Set the desired length (e.g., 10 characters)",
+              "const STRING_LEN = 12;",
+              "",
+              "// Set the generated string as a collection or environment variable",
+              "// Use pm.variables.set for a local variable, or pm.collectionVariables.set/pm.environment.set",
+              "// pm.environment.set('deviceId', randomString(STRING_LEN));",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"deviceId\": \"{{deviceId}}\",\n  \"hwModel\": \"{{deviceModel}}\",\n  \"orgId\":\"{{org_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/devices",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Node Activation",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}/auth?type=nats&enc=true",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}",
+            "auth"
+          ],
+          "query": [
+            {
+              "key": "type",
+              "value": "nats"
+            },
+            {
+              "key": "enc",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Node List",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/devices",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Node List Under Org",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/devices",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "devices"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Node Deactivate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer ${__property(accessTokenUser)}"
+          }
+        ],
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}:deactivate",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}:deactivate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Node Remove",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
