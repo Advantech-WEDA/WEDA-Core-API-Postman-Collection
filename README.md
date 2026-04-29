@@ -44,6 +44,8 @@ Understanding how to use WEDA APIs can be challenging. This collection provides 
 ### Step 1: Install Postman
 ### Step 2: Get Collection Files
 
+Download and extract the [WEDA API collection]() package
+
 > **Note**: If you download the .zip file, make sure to extract it.
 
 ### Step 3: Import into Postman
@@ -51,6 +53,16 @@ Understanding how to use WEDA APIs can be challenging. This collection provides 
 1. Click **Import** button (top-left)
 2. Choose the file or folder you downloaded
 3. Click **Import**, You should see 6 collections imported in the left sidebar
+
+<br />
+**Postman Overview**
+- left side: 
+  - **Collections**: 6 collections containing categorized API requests
+  - **Environments**: Select `weda-core` environment for API requests
+- main panel:
+  - send request and request setting/response details
+- right side:
+  - **Variables**: shows environment variables (auto-populated from API responses)
 
 ### Step 4: Configure Your Environment
 
@@ -67,9 +79,7 @@ Understanding how to use WEDA APIs can be challenging. This collection provides 
 
 > **Note**: If you don't have WEDA account, please go to [Register Free Trial](https://wise.advantech.com/en-tw/products/advantech.WEDA) to request one.
 
-:::info
 **You don't need to manually check these variables except for the 4 variables mentioned above** - they are automatically captured from API responses.
-:::
 
 4. **Activate the environment** - Select it from the dropdown (top-right corner)
 
@@ -90,9 +100,7 @@ Understanding how to use WEDA APIs can be challenging. This collection provides 
    - Response body (JSON data returned by API)
    - Test Results tab (validation results)
 
-:::info
 despite the detail of each API, the most important thing when using WEDA Postman API collection is to use the API in sequential workflows. Please follow the squence of collections to run the APIs, and you can achieve the desired results.
-:::
 
 ---
 
