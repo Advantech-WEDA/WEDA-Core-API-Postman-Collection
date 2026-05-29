@@ -307,12 +307,12 @@
           ]
         },
         "url": {
-          "raw": "{{idsbaseurl}}/identity/connect/token",
+          "raw": "{{domain}}/{{ssoBaseUrl}}/connect/token",
           "host": [
-            "{{idsbaseurl}}"
+            "{{domain}}"
           ],
           "path": [
-            "identity",
+            "{{ssoBaseUrl}}",
             "connect",
             "token"
           ]
