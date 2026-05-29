@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "19fb4fa3-c6c1-47c1-936a-f887fd4d662d",
+    "_postman_id": "17ef9864-1cc0-4f92-92fd-59fa228bca0e",
     "name": "0-WiseSso",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "54060136",
-    "_collection_link": "https://go.postman.co/collection/54060136-19fb4fa3-c6c1-47c1-936a-f887fd4d662d?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/54060136-17ef9864-1cc0-4f92-92fd-59fa228bca0e?source=collection_link"
   },
   "item": [
     {
@@ -16,8 +16,8 @@
             "exec": [
               "pm.cookies.clear();",
               "",
-              "const oidcIdentity = pm.environment.get('OIDC.Identity');",
-              "console.log('OIDC.Identity value:', oidcIdentity);"
+              "const oidcIdentity = pm.environment.get('Identity.Permission');",
+              "console.log('Identity.Permission value:', oidcIdentity);"
             ],
             "type": "text/javascript",
             "packages": {},
@@ -57,18 +57,19 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{idsbaseurl}}/portal/external-login?returnUrl={{idsbaseurl}}/central/weda",
+          "raw": "{{domain}}/{{tenantPath}}/portal/external-login?returnUrl={{domain}}/{{tenantPath}}/{{appPath}}",
           "host": [
-            "{{idsbaseurl}}"
+            "{{domain}}"
           ],
           "path": [
+            "{{tenantPath}}",
             "portal",
             "external-login"
           ],
           "query": [
             {
               "key": "returnUrl",
-              "value": "{{idsbaseurl}}/central/weda"
+              "value": "{{domain}}/{{tenantPath}}/{{appPath}}"
             }
           ]
         }
@@ -84,12 +85,12 @@
             "exec": [
               "pm.test('Status is 200', () => pm.expect(pm.response.code).to.eql(200));",
               "const setCookie = pm.response.headers.get('Set-Cookie');",
-              "if (setCookie && setCookie.includes('OIDC.Identity=')) {",
+              "if (setCookie && setCookie.includes('Identity.Permission=')) {",
               "  const cookies = setCookie.split(',');",
-              "  const identityCookie = cookies.find(c => c.includes('OIDC.Identity='));",
+              "  const identityCookie = cookies.find(c => c.includes('Identity.Permission='));",
               "  if (identityCookie) {",
               "    const value = identityCookie.split(';')[0].split('=')[1];",
-              "    pm.environment.set('OIDC.Identity', value);",
+              "    pm.environment.set('Identity.Permission', value);",
               "  }",
               "}"
             ],
@@ -101,8 +102,12 @@
         {
           "listen": "prerequest",
           "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
             "packages": {},
-            "type": "text/javascript"
+            "requests": {}
           }
         }
       ],
@@ -123,12 +128,12 @@
           "raw": "{\n  \"account\": \"{{login}}\",\n  \"password\": \"{{password}}\",\n  \"tenantId\": \"{{tenantId}}\"\n}"
         },
         "url": {
-          "raw": "{{idsbaseurl}}/identity/api/v1.0/account/login",
+          "raw": "{{domain}}/{{ssoBaseUrl}}/api/v1.0/account/login",
           "host": [
-            "{{idsbaseurl}}"
+            "{{domain}}"
           ],
           "path": [
-            "identity",
+            "{{ssoBaseUrl}}",
             "api",
             "v1.0",
             "account",
@@ -145,8 +150,8 @@
           "listen": "prerequest",
           "script": {
             "exec": [
-              "const oidcIdentity = pm.environment.get('OIDC.Identity');",
-              "console.log('OIDC.Identity value:', oidcIdentity);"
+              "const oidcIdentity = pm.environment.get('Identity.Permission');",
+              "console.log('Identity.Permission value:', oidcIdentity);"
             ],
             "type": "text/javascript",
             "packages": {},
@@ -185,22 +190,23 @@
         "header": [
           {
             "key": "Cookie",
-            "value": "OIDC.Identity={{OIDC.Identity}}"
+            "value": "Identity.Permission={{Identity.Permission}}"
           }
         ],
         "url": {
-          "raw": "{{idsbaseurl}}/portal/external-login?returnUrl={{idsbaseurl}}/central/weda",
+          "raw": "{{domain}}/{{tenantPath}}/portal/external-login?returnUrl={{domain}}/{{tenantPath}}/{{appPath}}",
           "host": [
-            "{{idsbaseurl}}"
+            "{{domain}}"
           ],
           "path": [
+            "{{tenantPath}}",
             "portal",
             "external-login"
           ],
           "query": [
             {
               "key": "returnUrl",
-              "value": "{{idsbaseurl}}/central/weda"
+              "value": "{{domain}}/{{tenantPath}}/{{appPath}}"
             }
           ]
         }
@@ -272,6 +278,20 @@
               "Object.keys(responseJson).forEach(key => {",
               "    pm.environment.set(key, responseJson[key]);",
               "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const domain = pm.environment.get('domain');",
+              "const tenantPath = pm.environment.get('tenantPath');",
+              "const appPath = pm.environment.get('appPath');",
+              "pm.environment.set('apibaseurl', domain+'/'+tenantPath+'/'+appPath+'/api/v1');"
             ],
             "type": "text/javascript",
             "packages": {},
