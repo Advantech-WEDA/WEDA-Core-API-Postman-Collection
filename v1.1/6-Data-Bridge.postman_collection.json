@@ -1,0 +1,607 @@
+{
+  "info": {
+    "_postman_id": "6a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
+    "name": "6-Data-Bridge",
+    "description": "Data Bridge API collection. Covers MQTT broker configurations and bridge lifecycle (create, list, get, update, patch, enable, disable, delete). Run MQTT Broker Configs first, then Bridges. mqttConfigId and bridgeId are auto-captured from create responses.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "MQTT Broker Configs",
+      "item": [
+        {
+          "name": "Create MQTT Broker Config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('created', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "const body = pm.response.json();",
+                  "if (body && body.mqttConfigId) { pm.environment.set('mqttConfigId', body.mqttConfigId); }"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"mqtt local\",\n  \"brokerEndpoint\": \"localhost:1883\",\n  \"authType\": \"UsernamePassword\",\n  \"brokerCredentials\": {\n    \"username\": \"user\",\n    \"password\": \"pass\"\n  },\n  \"keepAliveInterval\": \"60s\",\n  \"reconnectInterval\": \"5s\",\n  \"mqttProtocolVersion\": \"V311\",\n  \"checkConnection\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/mqtt-broker-configs",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "mqtt-broker-configs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List MQTT Broker Configs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ok', function () { pm.expect(pm.response.code).to.eql(200); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/mqtt-broker-configs",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "mqtt-broker-configs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get MQTT Broker Config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ok', function () { pm.expect(pm.response.code).to.eql(200); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/mqtt-broker-configs/{{mqttConfigId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "mqtt-broker-configs",
+                "{{mqttConfigId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update MQTT Broker Config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ok', function () { pm.expect(pm.response.code).to.eql(200); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"mqtt local updated\",\n  \"brokerEndpoint\": \"localhost:1883\",\n  \"keepAliveInterval\": \"60s\",\n  \"reconnectInterval\": \"5s\",\n  \"mqttProtocolVersion\": \"V311\",\n  \"checkConnection\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/mqtt-broker-configs/{{mqttConfigId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "mqtt-broker-configs",
+                "{{mqttConfigId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update MQTT Broker Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('no content', function () { pm.expect(pm.response.code).to.eql(204); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"authType\": \"UsernamePassword\",\n  \"brokerCredentials\": {\n    \"username\": \"new-user\",\n    \"password\": \"new-pass\"\n  },\n  \"checkConnection\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/mqtt-broker-configs/{{mqttConfigId}}/credentials",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "mqtt-broker-configs",
+                "{{mqttConfigId}}",
+                "credentials"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete MQTT Broker Config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('no content', function () { pm.expect(pm.response.code).to.eql(204); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/mqtt-broker-configs/{{mqttConfigId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "mqtt-broker-configs",
+                "{{mqttConfigId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bridges",
+      "item": [
+        {
+          "name": "Create Bridge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('created', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "const body = pm.response.json();",
+                  "if (body && body.bridgeId) { pm.environment.set('bridgeId', body.bridgeId); }"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"bridge simple\",\n  \"mqtt\": {\n    \"mqttBrokerConfigId\": \"{{mqttConfigId}}\",\n    \"outputTopic\": \"factory/site1/cpu\",\n    \"qos\": 0\n  },\n  \"assemblyPolicy\": {\n    \"queueLimit\": 100,\n    \"timeoutSeconds\": 5,\n    \"onTimeout\": \"PublishPartial\"\n  },\n  \"bindings\": [\n    {\n      \"deviceId\": \"{{deviceId}}\",\n      \"dataObjectName\": \"temperature_cpu_therm\",\n      \"sourceFieldName\": \"valueObject\",\n      \"targetJsonPath\": \"$.cpuTemp\",\n      \"dataType\": \"number\",\n      \"requiredForAssembly\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Bridges",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ok', function () { pm.expect(pm.response.code).to.eql(200); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Bridge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ok', function () { pm.expect(pm.response.code).to.eql(200); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/{{bridgeId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "{{bridgeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Bridge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ok', function () { pm.expect(pm.response.code).to.eql(200); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"bridge updated\",\n  \"mqtt\": {\n    \"mqttBrokerConfigId\": \"{{mqttConfigId}}\",\n    \"outputTopic\": \"factory/site1/gpu-cpu\",\n    \"qos\": 1\n  },\n  \"assemblyPolicy\": {\n    \"queueLimit\": 100,\n    \"timeoutSeconds\": 30,\n    \"onTimeout\": \"PublishPartial\"\n  },\n  \"bindings\": [\n    {\n      \"deviceId\": \"{{deviceId}}\",\n      \"dataObjectName\": \"temperature_cpu_therm\",\n      \"sourceFieldName\": \"valueObject\",\n      \"targetJsonPath\": \"$.cpuTemp\",\n      \"dataType\": \"number\",\n      \"requiredForAssembly\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/{{bridgeId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "{{bridgeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Patch Bridge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('ok', function () { pm.expect(pm.response.code).to.eql(200); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mqtt\": {\n    \"outputTopic\": \"factory/site1/new-topic\"\n  },\n  \"assemblyPolicy\": {\n    \"timeoutSeconds\": 30\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/{{bridgeId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "{{bridgeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Enable Bridge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('no content', function () { pm.expect(pm.response.code).to.eql(204); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/{{bridgeId}}:enable",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "{{bridgeId}}:enable"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disable Bridge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('no content', function () { pm.expect(pm.response.code).to.eql(204); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/{{bridgeId}}:disable",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "{{bridgeId}}:disable"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Bridge",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('no content', function () { pm.expect(pm.response.code).to.eql(204); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/data-bridges/{{bridgeId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "data-bridges",
+                "{{bridgeId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "pm.request.headers.upsert({ key: 'Accept', value: 'application/json' });"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

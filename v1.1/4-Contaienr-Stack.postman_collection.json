@@ -1,0 +1,1617 @@
+{
+  "info": {
+    "_postman_id": "28ae9c17-703d-40f8-b9db-30e06de8a84b",
+    "name": "4-Contaienr-Stack",
+    "description": "Integration test collection for EdgeSync Container Management API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54060136",
+    "_collection_link": "https://go.postman.co/collection/54060136-28ae9c17-703d-40f8-b9db-30e06de8a84b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Registry Mgmt",
+      "item": [
+        {
+          "name": "Create Registry (AWS ECR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Registry created successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('registryId');",
+                  "    pm.expect(jsonData).to.have.property('registryName');",
+                  "    pm.expect(jsonData).to.have.property('registryUrl');",
+                  "    pm.expect(jsonData).to.have.property('registryEncryptedCredentials');",
+                  "    pm.collectionVariables.set('registryId', jsonData.registryId);",
+                  "    console.log('Registry created with ID: ' + jsonData.registryId);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registryName\": \"test-ecr-registry\",\n  \"registryUrl\": \"https://registry.dev.company.com\",\n  \"registryCredentials\": {\n    \"registryType\": \"AwsECR\",\n    \"accessKey\": \"AKIA2V7EXAMPLE123456\",\n    \"accessSecretKey\": \"8xJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLE7\",\n    \"region\": \"ap-southeast-1\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/containers/registries",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "containers",
+                "registries"
+              ]
+            },
+            "description": "Creates a new AWS ECR registry configuration."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Registries",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains registries\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "    console.log('Total registries: ' + jsonData.totalCount);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/containers/registries?maxResultCount=100&skipCount=0&sorting=creationTime desc",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "containers",
+                "registries"
+              ],
+              "query": [
+                {
+                  "key": "maxResultCount",
+                  "value": "100"
+                },
+                {
+                  "key": "skipCount",
+                  "value": "0"
+                },
+                {
+                  "key": "sorting",
+                  "value": "creationTime desc"
+                }
+              ]
+            },
+            "description": "Gets all registries with pagination and sorting."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Registry by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Registry details are correct\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.registryId).to.eql(pm.collectionVariables.get('registryId'));",
+                  "    pm.expect(jsonData).to.have.property('registryEncryptedCredentials');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/containers/registries/{{registryId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "containers",
+                "registries",
+                "{{registryId}}"
+              ]
+            },
+            "description": "Gets a specific registry by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Registry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Registry updated successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('registryId');",
+                  "    pm.expect(jsonData.registryId).to.eql(pm.collectionVariables.get('registryId'));",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registryName\": \"test-ecr-registry-updated\",\n  \"registryUrl\": \"https://registry.dev.company.com\",\n  \"registryCredentials\": {\n    \"registryType\": \"AwsECR\",\n    \"accessKey\": \"AKIA2V7EXAMPLE123456\",\n    \"accessSecretKey\": \"8xJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLE7\",\n    \"region\": \"ap-southeast-1\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orgs/{{org_id}}/containers/registries/{{registryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orgs",
+                "{{org_id}}",
+                "containers",
+                "registries",
+                "{{registryId}}"
+              ]
+            },
+            "description": "Updates a registry configuration."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Registry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test(\"Registry deleted successfully\", function () {",
+                  "    pm.expect(pm.response.status).to.equal('No Content');",
+                  "    console.log('Registry deleted successfully');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orgs/{{org_id}}/containers/registries/{{registryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orgs",
+                "{{org_id}}",
+                "containers",
+                "registries",
+                "{{registryId}}"
+              ]
+            },
+            "description": "Deletes a registry configuration."
+          },
+          "response": []
+        }
+      ],
+      "description": "Tests for Container Registry management endpoints."
+    },
+    {
+      "name": "Stack Mgmt & Deployment",
+      "item": [
+        {
+          "name": "Check Stack Name Availability",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Stack name is available\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    ",
+                  "    // Stack name is available if no items are returned",
+                  "    if (jsonData.totalCount === 0 || jsonData.items.length === 0) {",
+                  "        console.log('Stack name \"integration-test-stack\" is available');",
+                  "        pm.collectionVariables.set('stackNameAvailable', 'true');",
+                  "    } else {",
+                  "        console.log('Stack name \"integration-test-stack\" already exists');",
+                  "        pm.collectionVariables.set('stackNameAvailable', 'false');",
+                  "        ",
+                  "        // Show existing stack details",
+                  "        var existingStack = jsonData.items[0];",
+                  "        console.log('Existing stack ID: ' + existingStack.id);",
+                  "        console.log('Existing stack revision: ' + existingStack.stackRevisionId);",
+                  "        ",
+                  "        // Generate a unique stack name for this test run",
+                  "        var timestamp = new Date().getTime();",
+                  "        var newStackName = 'integration-test-stack-' + timestamp;",
+                  "        pm.collectionVariables.set('uniqueStackName', newStackName);",
+                  "        console.log('Generated unique stack name: ' + newStackName);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Response has correct structure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs?stackName=integration-test-stack&maxResultCount=1",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs"
+              ],
+              "query": [
+                {
+                  "key": "stackName",
+                  "value": "integration-test-stack"
+                },
+                {
+                  "key": "maxResultCount",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Checks if the stack name 'integration-test-stack' is already in use. If it exists, generates a unique name with timestamp."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Stack",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Set the stack name to use based on availability check",
+                  "var uniqueStackName = pm.collectionVariables.get('uniqueStackName');",
+                  "var finalStackName = uniqueStackName || 'integration-test-stack';",
+                  "pm.collectionVariables.set('finalStackName', finalStackName);",
+                  "console.log('Using stack name: ' + finalStackName);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has stackRevisionId and stackConfigId\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('stackRevisionId');",
+                  "    pm.expect(jsonData).to.have.property('stackConfigId');",
+                  "    pm.collectionVariables.set('stackRevisionId', jsonData.stackRevisionId);",
+                  "    pm.collectionVariables.set('stackConfigId', jsonData.stackConfigId);",
+                  "});",
+                  "",
+                  "pm.test(\"Stack name matches request\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var expectedStackName = pm.collectionVariables.get('finalStackName');",
+                  "    pm.expect(jsonData.stackName).to.eql(expectedStackName);",
+                  "});",
+                  "",
+                  "pm.test(\"Stack has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('type');",
+                  "    pm.expect(jsonData).to.have.property('composeFileContent');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stackName\": \"{{finalStackName}}\",\n  \"type\": \"compose\",\n  \"composeFileContent\": \"dmVyc2lvbjogIjMuOCIKc2VydmljZXM6CiAgbmdpbng6CiAgICBpbWFnZTogbmdpbng6bGF0ZXN0CiAgICBwb3J0czoKICAgICAgLSAiODA6ODAiCiAgICB2b2x1bWVzOgogICAgICAtIC4vaHR0bWw6L3Vzci9zaGFyZS9uZ2lueC9odG1s\",\n  \"environment\": {},\n  \"description\": \"Integration test stack for Postman collection\"\n}"
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs"
+              ]
+            },
+            "description": "Creates a new container stack with nginx service. The composeFileContent is base64 encoded Docker Compose YAML."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Stacks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains items array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Created stack is in the list\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var stackRevisionId = pm.collectionVariables.get('stackRevisionId');",
+                  "    var expectedStackName = pm.collectionVariables.get('finalStackName');",
+                  "    var foundStack = jsonData.items.find(stack => stack.stackRevisionId === stackRevisionId);",
+                  "    pm.expect(foundStack).to.not.be.undefined;",
+                  "    pm.expect(foundStack.stackName).to.eql(expectedStackName);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has pagination info\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs?maxResultCount=20&skipCount=0&sorting=creationTime desc",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs"
+              ],
+              "query": [
+                {
+                  "key": "maxResultCount",
+                  "value": "20"
+                },
+                {
+                  "key": "skipCount",
+                  "value": "0"
+                },
+                {
+                  "key": "sorting",
+                  "value": "creationTime desc"
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of container stacks, sorted by creation time in descending order."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Deployments under this device",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test(\"Deployment deletion successful\", function () {",
+                  "    // 204 No Content indicates successful deletion",
+                  "    pm.expect(pm.response.status).to.equal('No Content');",
+                  "    console.log('Deployment successfully deleted');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "docker",
+                "stacks"
+              ]
+            },
+            "description": "Deletes the deployment from the device. This removes the stack from the device but keeps the stack definition."
+          },
+          "response": []
+        },
+        {
+          "name": "Deploy Stack to Device",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains deployment statistics\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalDevices');",
+                  "    pm.expect(jsonData).to.have.property('newlyDeployedDevices');",
+                  "    pm.expect(jsonData).to.have.property('skippedDevices');",
+                  "    pm.expect(jsonData).to.have.property('deviceActions');",
+                  "});",
+                  "",
+                  "pm.test(\"Deployment was successful\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.totalDevices).to.eql(1);",
+                  "    pm.expect(jsonData.newlyDeployedDevices).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test(\"Stack deployments array is present\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('stackDeployments');",
+                  "    pm.expect(jsonData.stackDeployments).to.be.an('array');",
+                  "    if (jsonData.stackDeployments.length > 0) {",
+                  "        pm.collectionVariables.set('deploymentTaskId', jsonData.stackDeployments[0].taskId);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Device action is correct\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var deviceId = pm.collectionVariables.get('deviceId');",
+                  "    pm.expect(jsonData.deviceActions).to.have.property(deviceId);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceIds\": [\n    \"{{deviceId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}:deploy",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs",
+                "{{stackConfigId}}",
+                "revisions",
+                "{{stackRevisionId}}:deploy"
+              ]
+            },
+            "description": "Deploys the created stack to the specified device (74fe488d5d54). The API will handle deployment logic automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "Query Deployment Result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains deployment info\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Deployment status is available\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.items.length > 0) {",
+                  "        var deployment = jsonData.items[0];",
+                  "        pm.expect(deployment).to.have.property('status');",
+                  "        pm.expect(deployment).to.have.property('deviceId');",
+                  "        pm.expect(deployment).to.have.property('stackName');",
+                  "        ",
+                  "        // Verify it's our deployment",
+                  "        var deviceId = pm.collectionVariables.get('deviceId');",
+                  "        var expectedStackName = pm.collectionVariables.get('finalStackName');",
+                  "        pm.expect(deployment.deviceId).to.eql(deviceId);",
+                  "        pm.expect(deployment.stackName).to.eql(expectedStackName);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test(\"Deployment is active\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.items.length > 0) {",
+                  "        var deployment = jsonData.items[0];",
+                  "        pm.expect(deployment.active).to.be.true;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}/deployments?maxResultCount=10&skipCount=0",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs",
+                "{{stackConfigId}}",
+                "revisions",
+                "{{stackRevisionId}}",
+                "deployments"
+              ],
+              "query": [
+                {
+                  "key": "maxResultCount",
+                  "value": "10"
+                },
+                {
+                  "key": "skipCount",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Queries the deployment result for the deployed stack. Filters by stackRevisionId to get deployments for our specific stack."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Specific Stack Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Stack details are correct\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('stackRevisionId');",
+                  "    pm.expect(jsonData).to.have.property('stackName');",
+                  "    pm.expect(jsonData).to.have.property('composeFileContent');",
+                  "    ",
+                  "    var stackRevisionId = pm.collectionVariables.get('stackRevisionId');",
+                  "    var expectedStackName = pm.collectionVariables.get('finalStackName');",
+                  "    pm.expect(jsonData.stackRevisionId).to.eql(stackRevisionId);",
+                  "    pm.expect(jsonData.stackName).to.eql(expectedStackName);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs",
+                "{{stackConfigId}}",
+                "revisions",
+                "{{stackRevisionId}}"
+              ]
+            },
+            "description": "Retrieves detailed information about the specific stack we created."
+          },
+          "response": []
+        },
+        {
+          "name": "Wait for Deployment Running Status",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Initialize poll start time if not set",
+                  "if (!pm.collectionVariables.get('pollStartTime')) {",
+                  "    pm.collectionVariables.set('pollStartTime', Date.now());",
+                  "    pm.collectionVariables.set('pollAttempts', 0);",
+                  "    console.log('Starting deployment status polling...');",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Deployment status polling\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    ",
+                  "    var startTime = pm.collectionVariables.get('pollStartTime');",
+                  "    var currentTime = Date.now();",
+                  "    var elapsedTime = (currentTime - startTime) / 1000; // in seconds",
+                  "    var attempts = pm.collectionVariables.get('pollAttempts') || 0;",
+                  "    pm.collectionVariables.set('pollAttempts', attempts + 1);",
+                  "    ",
+                  "    console.log('Elapsed time: ' + elapsedTime.toFixed(1) + 's, Attempt: ' + (attempts + 1));",
+                  "    ",
+                  "    if (jsonData.items.length > 0) {",
+                  "        var deployment = jsonData.items[0];",
+                  "        pm.expect(deployment).to.have.property('status');",
+                  "        ",
+                  "        var status = deployment.status;",
+                  "        console.log('Current deployment status: ' + status);",
+                  "        ",
+                  "        if (status.includes('running(1)')) {",
+                  "            console.log('Deployment is running with 1 container after ' + elapsedTime.toFixed(1) + ' seconds');",
+                  "            pm.collectionVariables.set('deploymentReady', 'true');",
+                  "            // Clear polling variables",
+                  "            pm.collectionVariables.unset('pollStartTime');",
+                  "            pm.collectionVariables.unset('pollAttempts');",
+                  "            pm.test('Deployment status is running(1)', function() {",
+                  "                pm.expect(status).to.include('running(1)');",
+                  "            });",
+                  "            // Store deployment details for deletion",
+                  "            pm.collectionVariables.set('deploymentId', deployment.deploymentId);",
+                  "        } else if (elapsedTime >= 90) {",
+                  "            // Timeout after 90 seconds",
+                  "            console.log('Timeout: Deployment did not reach running(1) status within 90 seconds');",
+                  "            console.log('Final status: ' + status);",
+                  "            // Clear polling variables",
+                  "            pm.collectionVariables.unset('pollStartTime');",
+                  "            pm.collectionVariables.unset('pollAttempts');",
+                  "            pm.test('Deployment timeout - did not reach running(1) within 90 seconds', function() {",
+                  "                pm.expect.fail('Timeout: Final status was \"' + status + '\" after 90 seconds');",
+                  "            });",
+                  "        } else {",
+                  "            // Continue polling",
+                  "            console.log('Deployment still in progress, status: ' + status + ' (will retry in 2 seconds)');",
+                  "            pm.collectionVariables.set('deploymentReady', 'false');",
+                  "            // Schedule next request after 2 seconds",
+                  "            setTimeout(function() {",
+                  "                postman.setNextRequest('7. Wait for Deployment Running Status');",
+                  "            }, 2000);",
+                  "            pm.test('Deployment still in progress (continuing to poll)', function() {",
+                  "                pm.expect(status).to.not.include('running(1)');",
+                  "            });",
+                  "        }",
+                  "    } else {",
+                  "        console.log('No deployments found for the stack');",
+                  "        // Clear polling variables",
+                  "        pm.collectionVariables.unset('pollStartTime');",
+                  "        pm.collectionVariables.unset('pollAttempts');",
+                  "        pm.test('No deployments found', function() {",
+                  "            pm.expect.fail('No deployments found for the stack');",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}/deployments?maxResultCount=10&skipCount=0",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs",
+                "{{stackConfigId}}",
+                "revisions",
+                "{{stackRevisionId}}",
+                "deployments"
+              ],
+              "query": [
+                {
+                  "key": "maxResultCount",
+                  "value": "10"
+                },
+                {
+                  "key": "skipCount",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Waits for deployment to reach 'running(1)' status. This step should be retried until the status shows the container is running successfully."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Deployments (Org Level)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has deployment list\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "    console.log('Total deployments: ' + jsonData.totalCount);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/deployments?maxResultCount=100&skipCount=0&sorting=creationTime desc",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs",
+                "deployments"
+              ],
+              "query": [
+                {
+                  "key": "maxResultCount",
+                  "value": "100"
+                },
+                {
+                  "key": "skipCount",
+                  "value": "0"
+                },
+                {
+                  "key": "sorting",
+                  "value": "creationTime desc"
+                }
+              ]
+            },
+            "description": "Gets all stack deployments at the organization level with pagination and sorting support."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Stacks Deployments under  Device",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Device stacks deployed structure is correct (Manual Every)\", function () {",
+                  "    var responseData = pm.response.json();",
+                  "    var jsonData = responseData.items;",
+                  "    var expectedDeviceId = pm.collectionVariables.get('deviceId');",
+                  "    pm.expect(jsonData, 'Response must be a non-empty array').to.be.an('array').and.to.not.be.empty;",
+                  "    pm.expect(jsonData, 'All items must contain stackRevisionId').to.satisfy(arr => {",
+                  "        return arr.every(item => item.stackRevisionId !== undefined && item.stackRevisionId !== null);",
+                  "    });",
+                  "    pm.expect(jsonData, 'All items must contain deploymentId').to.satisfy(arr => {",
+                  "        return arr.every(item => item.deploymentId !== undefined && item.deploymentId !== null);",
+                  "    });",
+                  "    pm.expect(jsonData, 'All items must contain deviceId').to.satisfy(arr => {",
+                  "        return arr.every(item => item.deviceId !== undefined && item.deviceId !== null);",
+                  "    });",
+                  "    jsonData.forEach(function(item) {",
+                  "        pm.expect(item.deviceId, 'Each deployed stack must match the expected deviceId').to.eql(expectedDeviceId);",
+                  "    });",
+                  "    pm.collectionVariables.set('deploymentId', jsonData[0].deploymentId);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks?stackConfigId={{stackConfigId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "docker",
+                "stacks"
+              ],
+              "query": [
+                {
+                  "key": "stackConfigId",
+                  "value": "{{stackConfigId}}"
+                }
+              ]
+            },
+            "description": "Gets the stacks deployed on a specific device."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Deployment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test(\"Deployment deletion successful\", function () {",
+                  "    // 204 No Content indicates successful deletion",
+                  "    pm.expect(pm.response.status).to.equal('No Content');",
+                  "    console.log('Deployment successfully deleted');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "docker",
+                "stacks"
+              ]
+            },
+            "description": "Deletes the deployment from the device. This removes the stack from the device but keeps the stack definition."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Deployment Deletion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Deployment is no longer active\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    ",
+                  "    // After deletion, should either have no items or all items should be inactive",
+                  "    var activeDeployments = jsonData.items.filter(item => item.active === true);",
+                  "    pm.expect(activeDeployments.length).to.equal(0);",
+                  "    ",
+                  "    if (jsonData.items.length === 0) {",
+                  "        console.log('No deployments found - deployment successfully removed');",
+                  "    } else {",
+                  "        console.log('Deployment exists but is inactive - successfully undeployed');",
+                  "        jsonData.items.forEach(item => {",
+                  "            console.log('Deployment status: ' + item.status + ', Active: ' + item.active);",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}/deployments?maxResultCount=10&skipCount=0",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs",
+                "{{stackConfigId}}",
+                "revisions",
+                "{{stackRevisionId}}",
+                "deployments"
+              ],
+              "query": [
+                {
+                  "key": "maxResultCount",
+                  "value": "10"
+                },
+                {
+                  "key": "skipCount",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Confirms that the deployment has been successfully deleted by checking that no active deployments exist for this stack."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Stack",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test(\"Stack deletion successful\", function () {",
+                  "    // 204 No Content indicates successful deletion",
+                  "    pm.expect(pm.response.status).to.equal('No Content');",
+                  "    console.log('Stack successfully deleted');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}",
+              "host": [
+                "{{apibaseurl}}orgs"
+              ],
+              "path": [
+                "{{org_id}}",
+                "stack-configs",
+                "{{stackConfigId}}",
+                "revisions",
+                "{{stackRevisionId}}"
+              ]
+            },
+            "description": "Deletes the stack instance from the system. This can only be done after all deployments have been removed."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Stack Deletion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Stack no longer exists\", function () {",
+                  "    // 404 Not Found confirms the stack has been deleted",
+                  "    pm.expect(pm.response.status).to.equal('Not Found');",
+                  "    console.log('Stack deletion confirmed - stack no longer exists');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "orgs",
+                "{{org_id}}",
+                "stack-configs",
+                "{{stackConfigId}}",
+                "revisions",
+                "{{stackRevisionId}}"
+              ]
+            },
+            "description": "Confirms that the stack has been successfully deleted by attempting to retrieve it. Should return 404 Not Found."
+          },
+          "response": []
+        }
+      ],
+      "description": "Tests for stack deployment lifecycle - creation, deployment to devices, command execution, and cleanup."
+    },
+    {
+      "name": "Stack Command",
+      "item": [
+        {
+          "name": "Execute Stack Command (Pause)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Command execution response is valid\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('deviceId');",
+                  "    pm.expect(jsonData).to.have.property('cmd');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    console.log('Command message: ' + jsonData.message);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stackConfigId\": \"{{stackConfigId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks/commands:pause",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "docker",
+                "stacks",
+                "commands:pause"
+              ]
+            },
+            "description": "Executes a pause command on the stack. Valid actions include: start, stop, pause, resume, restart."
+          },
+          "response": []
+        },
+        {
+          "name": "Query Command Execution Logs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has paginated structure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "    ",
+                  "    if (jsonData.items.length > 0) {",
+                  "        console.log('Found ' + jsonData.totalCount + ' total command log entries, showing ' + jsonData.items.length + ' items');",
+                  "        jsonData.items.forEach((log, index) => {",
+                  "            console.log('Log ' + (index + 1) + ': ' + log.deviceCmd + ' - ' + log.message);",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks/commands/results?stackConfigId={{stackConfigId}}&range=all",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "docker",
+                "stacks",
+                "commands",
+                "results"
+              ],
+              "query": [
+                {
+                  "key": "stackConfigId",
+                  "value": "{{stackConfigId}}"
+                },
+                {
+                  "key": "range",
+                  "value": "all"
+                }
+              ]
+            },
+            "description": "Queries command execution results for the stack on the device."
+          },
+          "response": []
+        },
+        {
+          "name": "Query Command Results - Without Range Parameter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has paginated structure (default behavior)\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "    ",
+                  "    if (jsonData.items.length > 0) {",
+                  "        console.log('Found ' + jsonData.totalCount + ' total command results (default), showing ' + jsonData.items.length + ' items');",
+                  "        jsonData.items.forEach((log, index) => {",
+                  "            console.log('Result ' + (index + 1) + ': ' + log.deviceCmd + ' - ' + log.message);",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks/commands/results?stackConfigId={{stackConfigId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "docker",
+                "stacks",
+                "commands",
+                "results"
+              ],
+              "query": [
+                {
+                  "key": "stackConfigId",
+                  "value": "{{stackConfigId}}"
+                }
+              ]
+            },
+            "description": "Queries command execution results without range parameter to test default behavior."
+          },
+          "response": []
+        },
+        {
+          "name": "Query Command Results - Latest Only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has paginated structure with latest results\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "    ",
+                  "    if (jsonData.items.length > 0) {",
+                  "        console.log('Found latest command results: ' + jsonData.items.length + ' items');",
+                  "        jsonData.items.forEach((log, index) => {",
+                  "            console.log('Result ' + (index + 1) + ': ' + log.deviceCmd + ' - ' + log.message);",
+                  "        });",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks/commands/results?stackConfigId={{stackConfigId}}&range=latest",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "docker",
+                "stacks",
+                "commands",
+                "results"
+              ],
+              "query": [
+                {
+                  "key": "stackConfigId",
+                  "value": "{{stackConfigId}}"
+                },
+                {
+                  "key": "range",
+                  "value": "latest"
+                }
+              ]
+            },
+            "description": "Queries the latest command execution results for the stack on the device."
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Stack Command (Resume)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Resume command successful\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    console.log('Resume command message: ' + jsonData.message);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stackConfigId\": \"{{stackConfigId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks/commands:resume",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "docker",
+                "stacks",
+                "commands:resume"
+              ]
+            },
+            "description": "Resumes a paused stack."
+          },
+          "response": []
+        }
+      ],
+      "description": "Tests for stack deployment lifecycle - creation, deployment to devices, command execution, and cleanup."
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://172.22.23.10:44381"
+    },
+    {
+      "key": "org_id",
+      "value": "3a1b042d-40c3-64c0-5f5f-8aad7ae743da",
+      "description": "確保與accessToken內權限一致。"
+    },
+    {
+      "key": "accessToken",
+      "value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTY3MDU1MDMsImlzcyI6IkVkZ2VTeW5jLkF1dGhTZXJ2ZXIiLCJhdWQiOiJFZGdlU3luYy5BUEkiLCJpZCI6IjNhMWI2NWU2LWUzMWYtNjgzZS1hMWU1LWNjMGI1YjJjODFkZiIsInJvbGUiOiJhZG1pbiIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJhZG1pbiJdfSwicHJlZmVycmVkX3VzZXJuYW1lIjoic3RyaW5nIiwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwicmVzb3VyY2VfYWNjZXNzIjp7IjNhMWIwMDNjLWE0MmMtZWU0ZS01ZDViLTcyNDlmYTljYWUzNCI6eyJvcmdOYW1lIjoiRmlyc3RPcmciLCJvcmdSb2xlIjoiYWRtaW4iLCJyb2xlcyI6WyJpYW1fYWRtaW4iXX0sIjNhMWIwNDJkLTQwYzMtNjRjMC01ZjVmLThhYWQ3YWU3NDNkYSI6eyJvcmdOYW1lIjoiUm9vdF8yIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOltdfSwiM2ExYjAwNDUtMWJkZi0yNWFkLTM4NzctNWU3ZWNjOWUwZjNhIjp7Im9yZ05hbWUiOiJTZWNvbmRPcmdfMSIsIm9yZ1JvbGUiOiJ2aWV3ZXIiLCJyb2xlcyI6WyJpYW1fYWRtaW4iXX0sIjNhMWIwMDNiLTNlYzEtMTc5Mi00NDc2LTEyOTdlZjBjMjhhNSI6eyJvcmdOYW1lIjoiUm9vdE9yZyIsIm9yZ1JvbGUiOiJhZG1pbiIsInJvbGVzIjpbImlhbV9hZG1pbiIsImlhbV92aWV3ZXIiLCJkbV9hZG1pbiJdfSwiM2ExYjE5OWQtOTAzMS0yZTBhLTQ2MGEtNjczNDA5NjY3OTQ5Ijp7Im9yZ05hbWUiOiJGaXJzdF9wZXJtaXNzaW9uIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOltdfSwiM2ExYjIzNmItMGI2MS1mMzk3LTlmNGYtMjVlOWIzZTRjODA0Ijp7Im9yZ05hbWUiOiJSMl9jaGlsZDMiLCJvcmdSb2xlIjoiYWRtaW4iLCJyb2xlcyI6W119LCIzYTFiOTUyZC0xYjg1LTk2NDMtNzNhOC03MzZhMWRmZTAxZDIiOnsib3JnTmFtZSI6IkF1ZGl0TG9nVGVzdCIsIm9yZ1JvbGUiOiJhZG1pbiIsInJvbGVzIjpbXX0sIjNhMWJlMmQ3LWM4ZTgtZmM2NC1jMTFhLTk5MzMwNTcxYmU3MyI6eyJvcmdOYW1lIjoiQUJDIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOlsiaWFtX2FkbWluIl19LCIzYTFiZjBjMC04OTU5LWE2NjktMDEyMC0zZmE1N2QxZTE1OWYiOnsib3JnTmFtZSI6Ik9SRy5SUlIiLCJvcmdSb2xlIjoiYWRtaW4iLCJyb2xlcyI6W119LCIzYTFiZjBjMS1mOTFmLTA4NjYtNDgwZS0wYzIyZWI4MDIyMzYiOnsib3JnTmFtZSI6IkZpcnN0T3JnIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOltdfSwiM2ExYmYwZDYtMTI4Ny1mZDFiLTMxYTgtMjM3OTg3YzMyYTkxIjp7Im9yZ05hbWUiOiJPUkcuUlJSUlJSIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOltdfSwiM2ExYmYwZmItYjI2OS01ZDMyLWU5ZDItYmZiNDlhNDU1OThjIjp7Im9yZ05hbWUiOiJPUkcuUlJSUlIiLCJvcmdSb2xlIjoiYWRtaW4iLCJyb2xlcyI6W119LCIzYTFiMjQ3NS1iNjMxLTlkZTUtNjBjMy1iNWJmOTUyODU0MDgiOnsib3JnTmFtZSI6IlIyXzMiLCJvcmdSb2xlIjoidmlld2VyIiwicm9sZXMiOltdfX19.NxEDycd-OC7orb3cY62NoXvtPlSaN2Rs5JvM-1kAbO8IXX34MeQpnzFJB0s9Y4bHfGOKxyQh4r_sjQ8Kr1YHq3cg6Fl0eY4GA2Y_wZW_WwlUGQopAdCpvl-422OjTJ0THLf-99fxsh9B3tItSsREN57D65sGHlpMYQp7mt9Pk5r8wbp5hrxUB06OVFFR_JMtgiOMaceMZlLjdXz6zsHoJHbT7kDyYj6fPpCdIpruNQWgdCXY6MoQZeyI1NPIeTIujYa6bugyortDKbUMkN4LpxNHMFrVHgk8v85qoJmP7U3LMot2rt1-R9BMpetuEOXJ00xhSF-SJZlATiO6PrLeKg",
+      "description": "確保帶入有效的accessToken。"
+    },
+    {
+      "key": "stackRevisionId",
+      "value": ""
+    },
+    {
+      "key": "stackConfigId",
+      "value": ""
+    },
+    {
+      "key": "deploymentTaskId",
+      "value": ""
+    },
+    {
+      "key": "deviceId",
+      "value": "74fe488d5d54"
+    },
+    {
+      "key": "stackNameAvailable",
+      "value": ""
+    },
+    {
+      "key": "uniqueStackName",
+      "value": ""
+    },
+    {
+      "key": "finalStackName",
+      "value": ""
+    },
+    {
+      "key": "deploymentReady",
+      "value": ""
+    },
+    {
+      "key": "deploymentId",
+      "value": ""
+    },
+    {
+      "key": "registryId",
+      "value": ""
+    },
+    {
+      "key": "commandDeploymentId",
+      "value": ""
+    },
+    {
+      "key": "pollStartTime",
+      "value": ""
+    },
+    {
+      "key": "pollAttempts",
+      "value": ""
+    }
+  ]
+}

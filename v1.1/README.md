@@ -11,6 +11,7 @@ This Postman collection provides ready-to-use API requests for the **WEDA platfo
 - ✅ Container Stack Deployment
 - ✅ Telemetry Data Collection
 - ✅ Tunnel Management for Remote Access
+- ✅ Data Bridge (MQTT broker configs & bridge lifecycle)
 
 ---
 
@@ -52,12 +53,12 @@ Download and extract the [WEDA API collection]() package
 
 1. Click **Import** button (top-left)
 2. Choose the file or folder you downloaded
-3. Click **Import**, You should see 6 collections imported in the left sidebar
+3. Click **Import**, You should see 7 collections imported in the left sidebar
 
 <br />
 **Postman Overview**
 - left side: 
-  - **Collections**: 6 collections containing categorized API requests
+  - **Collections**: 7 collections containing categorized API requests
   - **Environments**: Select `weda-core` environment for API requests
 - main panel:
   - send request and request setting/response details
@@ -74,8 +75,11 @@ Download and extract the [WEDA API collection]() package
 | ------------ | :---------------------------------------------------- |
 | `login`      | `<your-login-id>`                                     |
 | `password`   | `<your-password>`                                     |
-| `idsbaseurl` | `https://tpe.cloud.advantech.com/central/weda`        |
-| `apibaseurl` | `https://tpe.cloud.advantech.com/central/weda/api/v1` |
+| `domain`     | `<weda-domain>`                                       |
+| `ssoBaseUrl` | `<sso-base-url>`                                      |
+| `tenantPath` | `<tenant-path>`                                       |
+| `appPath`    | `<app-path>`                                          |
+
 
 > **Note**: If you don't have WEDA account, please go to [Register Free Trial](https://wise.advantech.com/en-tw/products/advantech.WEDA) to request one.
 

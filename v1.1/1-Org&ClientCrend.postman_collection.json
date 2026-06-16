@@ -121,13 +121,19 @@
           }
         },
         "url": {
-          "raw": "{{apibaseurl}}/orgs/{{org_id}}",
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}?orgName={{login}}",
           "host": [
             "{{apibaseurl}}"
           ],
           "path": [
             "orgs",
             "{{org_id}}"
+          ],
+          "query": [
+            {
+              "key": "orgName",
+              "value": "{{login}}"
+            }
           ]
         }
       },
@@ -149,7 +155,7 @@
               "    pm.environment.set(\"clientSecret\", response.clientSecret);",
               "}",
               "if (response.clientCredentialId) {",
-              "    pm.environment.set(\"clientCredentialId\", response.clientSecret);",
+              "    pm.environment.set(\"clientCredentialId\", response.clientCredentialId);",
               "}",
               "",
               ""
@@ -236,14 +242,13 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "{{apibaseurl}}/api/v1/pats/{{clientCredentialId}}",
+          "raw": "{{apibaseurl}}/oauth2/client-credentials/{{clientCredentialId}}",
           "host": [
             "{{apibaseurl}}"
           ],
           "path": [
-            "api",
-            "v1",
-            "pats",
+            "oauth2",
+            "client-credentials",
             "{{clientCredentialId}}"
           ]
         }

@@ -1,0 +1,585 @@
+{
+  "info": {
+    "_postman_id": "3fcb0ee9-5321-4e56-8011-1e1e477fdde9",
+    "name": "5-Tunnel-Mgmt",
+    "description": "Integration test collection for Tunnel Management API with valid authentication. Tests execute sequentially with polling for status transitions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54060136",
+    "_collection_link": "https://go.postman.co/collection/54060136-3fcb0ee9-5321-4e56-8011-1e1e477fdde9?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Tunnel Sessions",
+      "item": [
+        {
+          "name": "List Tunnels with Pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains tunnels\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalCount');",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "    console.log('Total tunnels: ' + jsonData.totalCount);",
+                  "    ",
+                  "    if (jsonData.items.length > 0) {",
+                  "        console.log('First tunnel ID: ' + jsonData.items[0].tunnelSessionId);",
+                  "        console.log('First tunnel status: ' + jsonData.items[0].sessionStatus);",
+                  "    }",
+                  "});",
+                  "",
+                  "// Proceed to next test",
+                  "postman.setNextRequest('4. List Tunnels with Status Filter');"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/tunnels/sessions?maxResultCount=20&skipCount=0&sorting=creationTime desc",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "tunnels",
+                "sessions"
+              ],
+              "query": [
+                {
+                  "key": "maxResultCount",
+                  "value": "20"
+                },
+                {
+                  "key": "skipCount",
+                  "value": "0"
+                },
+                {
+                  "key": "sorting",
+                  "value": "creationTime desc"
+                }
+              ]
+            },
+            "description": "Retrieves a paginated list of tunnel sessions with default sorting."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Tunnel",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Try environment first, then collection variable",
+                  "var deviceId = pm.environment.get('deviceId') || pm.collectionVariables.get('deviceId');",
+                  "if (!deviceId) {",
+                  "    throw new Error('deviceId is required. Please set it in environment or collection variables.');",
+                  "}",
+                  "console.log('Creating tunnel for device: ' + deviceId);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 202\", function () {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test(\"Tunnel created successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('tunnelSessionId');",
+                  "    pm.expect(jsonData).to.have.property('deviceId');",
+                  "    pm.expect(jsonData).to.have.property('serviceType');",
+                  "    pm.expect(jsonData).to.have.property('sessionStatus');",
+                  "    ",
+                  "    // Save tunnel ID for subsequent tests",
+                  "    pm.collectionVariables.set('tunnelId', jsonData.tunnelSessionId);",
+                  "    pm.collectionVariables.set('deviceId', jsonData.deviceId);",
+                  "    ",
+                  "    console.log('Tunnel created with ID: ' + jsonData.tunnelSessionId);",
+                  "    console.log('Session Status: ' + jsonData.sessionStatus);",
+                  "    console.log('Tunnel Endpoint: ' + (jsonData.tunnelEndpoint || 'Not yet assigned'));",
+                  "});",
+                  "",
+                  "// Automatically proceed to next test",
+                  "postman.setNextRequest('2. Wait for ESTABLISHED Status');"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceType\": \"ssh\",\n  \"applicationHost\": \"127.0.0.1\",\n  \"applicationPort\": 22,\n  \"purpose\": \"Remote SSH access for maintenance\",\n  \"tags\": [\"maintenance\", \"ssh\", \"production\"]\n}"
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/tunnels/sessions",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "tunnels",
+                "sessions"
+              ]
+            },
+            "description": "Creates a new tunnel session for SSH service."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Tunnel Detail by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Tunnel details are correct\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.tunnelSessionId).to.eql(pm.collectionVariables.get('tunnelId'));",
+                  "    pm.expect(jsonData).to.have.property('healthStatus');",
+                  "    pm.expect(jsonData).to.have.property('lastModificationTime');",
+                  "    pm.expect(jsonData).to.have.property('applicationHost');",
+                  "    pm.expect(jsonData).to.have.property('applicationPort');",
+                  "    ",
+                  "    console.log('Tunnel ID: ' + jsonData.tunnelSessionId);",
+                  "    console.log('Device ID: ' + jsonData.deviceId);",
+                  "    console.log('Service Type: ' + jsonData.serviceType);",
+                  "    console.log('Session Status: ' + jsonData.sessionStatus);",
+                  "    console.log('Health Status: ' + jsonData.healthStatus);",
+                  "    console.log('Application: ' + jsonData.applicationHost + ':' + jsonData.applicationPort);",
+                  "    console.log('Tunnel Endpoint: ' + jsonData.tunnelEndpoint);",
+                  "    console.log('Purpose: ' + jsonData.purpose);",
+                  "    console.log('Tags: ' + jsonData.tags.join(', '));",
+                  "});",
+                  "",
+                  "// Proceed to next test",
+                  "postman.setNextRequest('8. Update Tunnel Metadata');"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/tunnels/sessions/{{tunnelId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "tunnels",
+                "sessions",
+                "{{tunnelId}}"
+              ]
+            },
+            "description": "Retrieves detailed information about a specific tunnel session including health status."
+          },
+          "response": []
+        },
+        {
+          "name": "Wait for ESTABLISHED Status",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Initialize polling variables on first attempt",
+                  "if (!pm.collectionVariables.get('pollStartTime')) {",
+                  "    pm.collectionVariables.set('pollStartTime', Date.now());",
+                  "    pm.collectionVariables.set('pollAttempts', 0);",
+                  "    console.log('Starting to poll for ESTABLISHED status...');",
+                  "} else {",
+                  "    var attempts = parseInt(pm.collectionVariables.get('pollAttempts')) + 1;",
+                  "    pm.collectionVariables.set('pollAttempts', attempts);",
+                  "    console.log('Poll attempt #' + attempts);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "var sessionStatus = jsonData.sessionStatus;",
+                  "var pollStartTime = parseInt(pm.collectionVariables.get('pollStartTime'));",
+                  "var elapsedTime = (Date.now() - pollStartTime) / 1000; // seconds",
+                  "var timeoutSeconds = 30;",
+                  "",
+                  "console.log('Current Status: ' + sessionStatus + ' (elapsed: ' + elapsedTime.toFixed(1) + 's)');",
+                  "console.log('Tunnel Endpoint: ' + (jsonData.tunnelEndpoint || 'Not yet assigned'));",
+                  "console.log('webSsh URL: ' + (jsonData.webSsh || 'Not yet assigned'));",
+                  "",
+                  "// SessionStatus: 0=ESTABLISHING, 1=ESTABLISHED, 2=TERMINATING, 3=TERMINATED",
+                  "if (sessionStatus === 1 || sessionStatus === 'ESTABLISHED') {",
+                  "    // Success - tunnel is established",
+                  "    pm.test(\"Tunnel is ESTABLISHED\", function () {",
+                  "        pm.expect(sessionStatus).to.satisfy(function(status) {",
+                  "            return status === 1 || status === 'ESTABLISHED';",
+                  "        });",
+                  "    });",
+                  "    ",
+                  "    pm.test(\"TunnelEndpoint is assigned\", function () {",
+                  "        pm.expect(jsonData.tunnelEndpoint).to.be.a('string');",
+                  "        pm.expect(jsonData.tunnelEndpoint).to.not.be.empty;",
+                  "    });",
+                  "    ",
+                  "    pm.test(\"webSsh URL is assigned\", function () {",
+                  "        pm.expect(jsonData.webSsh).to.be.a('string');",
+                  "        pm.expect(jsonData.webSsh).to.not.be.empty;",
+                  "    });",
+                  "    ",
+                  "    console.log('Tunnel ESTABLISHED successfully!');",
+                  "    console.log('TunnelEndpoint: ' + jsonData.tunnelEndpoint);",
+                  "    console.log('webSsh: ' + jsonData.webSsh);",
+                  "    ",
+                  "    // Clear polling variables",
+                  "    pm.collectionVariables.unset('pollStartTime');",
+                  "    pm.collectionVariables.unset('pollAttempts');",
+                  "    ",
+                  "    // Proceed to next test",
+                  "    postman.setNextRequest('3. List Tunnels with Pagination');",
+                  "    ",
+                  "} else if (elapsedTime >= timeoutSeconds) {",
+                  "    // Timeout - failed to establish within time limit",
+                  "    pm.test(\"Tunnel ESTABLISHED within timeout\", function () {",
+                  "        pm.expect.fail('Timeout: Tunnel did not reach ESTABLISHED status within ' + timeoutSeconds + ' seconds. Current status: ' + sessionStatus);",
+                  "    });",
+                  "    ",
+                  "    // Clear polling variables",
+                  "    pm.collectionVariables.unset('pollStartTime');",
+                  "    pm.collectionVariables.unset('pollAttempts');",
+                  "    ",
+                  "    // Stop test execution",
+                  "    postman.setNextRequest(null);",
+                  "    ",
+                  "} else {",
+                  "    // Still ESTABLISHING - continue polling",
+                  "    pm.test(\"Tunnel is still ESTABLISHING (will retry)\", function () {",
+                  "        pm.expect(sessionStatus).to.satisfy(function(status) {",
+                  "            return status === 0 || status === 'ESTABLISHING'|| status === 'REQUESTED';",
+                  "        });",
+                  "    });",
+                  "    ",
+                  "    console.log('Still ESTABLISHING... will check again in 2 seconds');",
+                  "    ",
+                  "    // Wait 2 seconds and retry",
+                  "    setTimeout(function() {",
+                  "        postman.setNextRequest('2. Wait for ESTABLISHED Status');",
+                  "    }, 2000);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/tunnels/sessions/{{tunnelId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "tunnels",
+                "sessions",
+                "{{tunnelId}}"
+              ]
+            },
+            "description": "Polls tunnel status until ESTABLISHED (or timeout after 30 seconds). Verifies TunnelEndpoint and webSsh are assigned."
+          },
+          "response": []
+        },
+        {
+          "name": "Terminate Tunnel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 202\", function () {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test(\"Tunnel termination initiated\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.tunnelSessionId).to.eql(pm.collectionVariables.get('tunnelId'));",
+                  "    ",
+                  "    console.log('Tunnel termination initiated');",
+                  "    console.log('Session Status: ' + jsonData.sessionStatus);",
+                  "});",
+                  "",
+                  "// Proceed to wait for TERMINATED status",
+                  "postman.setNextRequest('10. Wait for TERMINATED Status');"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Integration test completed\",\n  \"graceful\": true,\n  \"forceTimeout\": 30\n}"
+            },
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/tunnels/sessions/{{tunnelId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "tunnels",
+                "sessions",
+                "{{tunnelId}}"
+              ]
+            },
+            "description": "Terminates the tunnel session gracefully."
+          },
+          "response": []
+        },
+        {
+          "name": "Wait for TERMINATED Status",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Initialize polling variables on first attempt",
+                  "if (!pm.collectionVariables.get('terminatePollStartTime')) {",
+                  "    pm.collectionVariables.set('terminatePollStartTime', Date.now());",
+                  "    pm.collectionVariables.set('terminatePollAttempts', 0);",
+                  "    console.log('Starting to poll for TERMINATED status...');",
+                  "} else {",
+                  "    var attempts = parseInt(pm.collectionVariables.get('terminatePollAttempts')) + 1;",
+                  "    pm.collectionVariables.set('terminatePollAttempts', attempts);",
+                  "    console.log('Poll attempt #' + attempts);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "var sessionStatus = jsonData.sessionStatus;",
+                  "var pollStartTime = parseInt(pm.collectionVariables.get('terminatePollStartTime'));",
+                  "var elapsedTime = (Date.now() - pollStartTime) / 1000; // seconds",
+                  "var timeoutSeconds = 30;",
+                  "",
+                  "console.log('Current Status: ' + sessionStatus + ' (elapsed: ' + elapsedTime.toFixed(1) + 's)');",
+                  "console.log('Terminated Time: ' + (jsonData.terminatedTime || 'Not yet set'));",
+                  "",
+                  "if (sessionStatus === 'TERMINATED'|| sessionStatus === 'FAILED') {",
+                  "    // Success - tunnel is terminated",
+                  "    pm.test(\"Tunnel is TERMINATED\", function () {",
+                  "        pm.expect(sessionStatus).to.satisfy(function(status) {",
+                  "            return status === 'TERMINATED' || status === 'FAILED';",
+                  "        });",
+                  "    });",
+                  "    ",
+                  "    pm.test(\"TerminatedTime is set\", function () {",
+                  "        pm.expect(jsonData.terminatedTime).to.be.a('string');",
+                  "        pm.expect(jsonData.terminatedTime).to.not.be.empty;",
+                  "    });",
+                  "    ",
+                  "    console.log('Tunnel TERMINATED successfully!');",
+                  "    console.log('TerminatedTime: ' + jsonData.terminatedTime);",
+                  "    ",
+                  "    // Clear polling variables",
+                  "    pm.collectionVariables.unset('terminatePollStartTime');",
+                  "    pm.collectionVariables.unset('terminatePollAttempts');",
+                  "    ",
+                  "    // Test sequence complete",
+                  "    postman.setNextRequest(null);",
+                  "    ",
+                  "} else if (elapsedTime >= timeoutSeconds) {",
+                  "    // Timeout - failed to terminate within time limit",
+                  "    pm.test(\"Tunnel TERMINATED within timeout\", function () {",
+                  "        pm.expect.fail('Timeout: Tunnel did not reach TERMINATED status within ' + timeoutSeconds + ' seconds. Current status: ' + sessionStatus);",
+                  "    });",
+                  "    ",
+                  "    // Clear polling variables",
+                  "    pm.collectionVariables.unset('terminatePollStartTime');",
+                  "    pm.collectionVariables.unset('terminatePollAttempts');",
+                  "    ",
+                  "    // Stop test execution",
+                  "    postman.setNextRequest(null);",
+                  "    ",
+                  "} else {",
+                  "    // Still TERMINATING - continue polling",
+                  "    pm.test(\"Tunnel is still TERMINATING (will retry)\", function () {",
+                  "        pm.expect(sessionStatus).to.satisfy(function(status) {",
+                  "            return status === 2 || status === 'TERMINATING';",
+                  "        });",
+                  "    });",
+                  "    ",
+                  "    console.log('Still TERMINATING... will check again in 2 seconds');",
+                  "    ",
+                  "    // Wait 2 seconds and retry",
+                  "    setTimeout(function() {",
+                  "        postman.setNextRequest('10. Wait for TERMINATED Status');",
+                  "    }, 2000);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apibaseurl}}/devices/{{deviceId}}/tunnels/sessions/{{tunnelId}}",
+              "host": [
+                "{{apibaseurl}}"
+              ],
+              "path": [
+                "devices",
+                "{{deviceId}}",
+                "tunnels",
+                "sessions",
+                "{{tunnelId}}"
+              ]
+            },
+            "description": "Polls tunnel status until TERMINATED (or timeout after 30 seconds). Verifies TerminatedTime is set."
+          },
+          "response": []
+        }
+      ],
+      "description": "Complete tunnel lifecycle test: Create -> Wait ESTABLISHED -> List/Filter/Get -> Update -> Terminate -> Wait TERMINATED"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://172.22.23.10:44333"
+    },
+    {
+      "key": "accessToken",
+      "value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTY3MDU1MDMsImlzcyI6IkVkZ2VTeW5jLkF1dGhTZXJ2ZXIiLCJhdWQiOiJFZGdlU3luYy5BUEkiLCJpZCI6IjNhMWI2NWU2LWUzMWYtNjgzZS1hMWU1LWNjMGI1YjJjODFkZiIsInJvbGUiOiJhZG1pbiIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJhZG1pbiJdfSwicHJlZmVycmVkX3VzZXJuYW1lIjoic3RyaW5nIiwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwicmVzb3VyY2VfYWNjZXNzIjp7IjNhMWIwMDNjLWE0MmMtZWU0ZS01ZDViLTcyNDlmYTljYWUzNCI6eyJvcmdOYW1lIjoiRmlyc3RPcmciLCJvcmdSb2xlIjoiYWRtaW4iLCJyb2xlcyI6WyJpYW1fYWRtaW4iXX0sIjNhMWIwNDJkLTQwYzMtNjRjMC01ZjVmLThhYWQ3YWU3NDNkYSI6eyJvcmdOYW1lIjoiUm9vdF8yIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOltdfSwiM2ExYjAwNDUtMWJkZi0yNWFkLTM4NzctNWU3ZWNjOWUwZjNhIjp7Im9yZ05hbWUiOiJTZWNvbmRPcmdfMSIsIm9yZ1JvbGUiOiJ2aWV3ZXIiLCJyb2xlcyI6WyJpYW1fYWRtaW4iXX0sIjNhMWIwMDNiLTNlYzEtMTc5Mi00NDc2LTEyOTdlZjBjMjhhNSI6eyJvcmdOYW1lIjoiUm9vdE9yZyIsIm9yZ1JvbGUiOiJhZG1pbiIsInJvbGVzIjpbImlhbV9hZG1pbiIsImlhbV92aWV3ZXIiLCJkbV9hZG1pbiJdfSwiM2ExYjE5OWQtOTAzMS0yZTBhLTQ2MGEtNjczNDA5NjY3OTQ5Ijp7Im9yZ05hbWUiOiJGaXJzdF9wZXJtaXNzaW9uIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOltdfSwiM2ExYjIzNmItMGI2MS1mMzk3LTlmNGYtMjVlOWIzZTRjODA0Ijp7Im9yZ05hbWUiOiJSMl9jaGlsZDMiLCJvcmdSb2xlIjoiYWRtaW4iLCJyb2xlcyI6W119LCIzYTFiOTUyZC0xYjg1LTk2NDMtNzNhOC03MzZhMWRmZTAxZDIiOnsib3JnTmFtZSI6IkF1ZGl0TG9nVGVzdCIsIm9yZ1JvbGUiOiJhZG1pbiIsInJvbGVzIjpbXX0sIjNhMWJlMmQ3LWM4ZTgtZmM2NC1jMTFhLTk5MzMwNTcxYmU3MyI6eyJvcmdOYW1lIjoiQUJDIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOlsiaWFtX2FkbWluIl19LCIzYTFiZjBjMC04OTU5LWE2NjktMDEyMC0zZmE1N2QxZTE1OWYiOnsib3JnTmFtZSI6Ik9SRy5SUlIiLCJvcmdSb2xlIjoiYWRtaW4iLCJyb2xlcyI6W119LCIzYTFiZjBjMS1mOTFmLTA4NjYtNDgwZS0wYzIyZWI4MDIyMzYiOnsib3JnTmFtZSI6IkZpcnN0T3JnIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOltdfSwiM2ExYmYwZDYtMTI4Ny1mZDFiLTMxYTgtMjM3OTg3YzMyYTkxIjp7Im9yZ05hbWUiOiJPUkcuUlJSUlJSIiwib3JnUm9sZSI6ImFkbWluIiwicm9sZXMiOltdfSwiM2ExYmYwZmItYjI2OS01ZDMyLWU5ZDItYmZiNDlhNDU1OThjIjp7Im9yZ05hbWUiOiJPUkcuUlJSUlIiLCJvcmdSb2xlIjoiYWRtaW4iLCJyb2xlcyI6W119LCIzYTFiMjQ3NS1iNjMxLTlkZTUtNjBjMy1iNWJmOTUyODU0MDgiOnsib3JnTmFtZSI6IlIyXzMiLCJvcmdSb2xlIjoidmlld2VyIiwicm9sZXMiOltdfX19.NxEDycd-OC7orb3cY62NoXvtPlSaN2Rs5JvM-1kAbO8IXX34MeQpnzFJB0s9Y4bHfGOKxyQh4r_sjQ8Kr1YHq3cg6Fl0eY4GA2Y_wZW_WwlUGQopAdCpvl-422OjTJ0THLf-99fxsh9B3tItSsREN57D65sGHlpMYQp7mt9Pk5r8wbp5hrxUB06OVFFR_JMtgiOMaceMZlLjdXz6zsHoJHbT7kDyYj6fPpCdIpruNQWgdCXY6MoQZeyI1NPIeTIujYa6bugyortDKbUMkN4LpxNHMFrVHgk8v85qoJmP7U3LMot2rt1-R9BMpetuEOXJ00xhSF-SJZlATiO6PrLeKg",
+      "description": "確保帶入可正確解析的有效 accessToken"
+    },
+    {
+      "key": "deviceId",
+      "value": "74fe488d5d54"
+    },
+    {
+      "key": "tunnelSessionId",
+      "value": ""
+    },
+    {
+      "key": "tunnelId",
+      "value": ""
+    },
+    {
+      "key": "org_id",
+      "value": ""
+    }
+  ]
+}
