@@ -73,10 +73,10 @@ Download and extract the [WEDA API collection]() package
 
 | Variable     | Your Value                                            |
 | ------------ | :---------------------------------------------------- |
-| `login`      | `<your-login-id>`                                     |
-| `password`   | `<your-password>`                                     |
-| `idsbaseurl` | `https://tpe.cloud.advantech.com/central/weda`        |
-| `apibaseurl` | `https://tpe.cloud.advantech.com/central/weda/api/v1` |
+| `login`      | Your WEDA account email — **required**                |
+| `password`   | Your WEDA account password — **required**             |
+| `domain`     | Pre-filled with `https://tpe.cloud.advantech.com`; change only if your deployment differs |
+| `ssoBaseUrl` | Pre-filled with `identity`; change only if your deployment differs |
 
 > **Note**: If you don't have WEDA account, please go to [Register Free Trial](https://wise.advantech.com/en-tw/products/advantech.WEDA) to request one.
 
