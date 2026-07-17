@@ -1,11 +1,10 @@
 {
   "info": {
-    "_postman_id": "28ae9c17-703d-40f8-b9db-30e06de8a84b",
+    "_postman_id": "4ce50919-bc49-424f-98ec-cb2c20e64fbf",
     "name": "4-Contaienr-Stack",
     "description": "Integration test collection for EdgeSync Container Management API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "54060136",
-    "_collection_link": "https://go.postman.co/collection/54060136-28ae9c17-703d-40f8-b9db-30e06de8a84b?source=collection_link"
+    "_exporter_id": "219282"
   },
   "item": [
     {
@@ -185,7 +184,8 @@
                   "});"
                 ],
                 "type": "text/javascript",
-                "packages": {}
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -202,9 +202,9 @@
               "raw": "{\n  \"registryName\": \"test-ecr-registry-updated\",\n  \"registryUrl\": \"https://registry.dev.company.com\",\n  \"registryCredentials\": {\n    \"registryType\": \"AwsECR\",\n    \"accessKey\": \"AKIA2V7EXAMPLE123456\",\n    \"accessSecretKey\": \"8xJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLE7\",\n    \"region\": \"ap-southeast-1\"\n  }\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/orgs/{{org_id}}/containers/registries/{{registryId}}",
+              "raw": "{{apibaseurl}}/api/v1/orgs/{{org_id}}/containers/registries/{{registryId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{apibaseurl}}"
               ],
               "path": [
                 "api",
@@ -956,7 +956,7 @@
           "response": []
         },
         {
-          "name": "Get Stacks Deployments under  Device",
+          "name": "Get Stacks Deployments under Device",
           "event": [
             {
               "listen": "test",
@@ -1155,7 +1155,7 @@
             "url": {
               "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}",
               "host": [
-                "{{apibaseurl}}/orgs"
+                "{{apibaseurl}}"
               ],
               "path": [
                 "orgs",

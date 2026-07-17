@@ -1,0 +1,688 @@
+{
+  "info": {
+    "_postman_id": "70ec6edd-8d41-4160-b078-8b1e65da91d8",
+    "name": "7-AiModelMgmt",
+    "description": "End-to-end full flow (runs in a single newman / Collection Runner pass):  \n1-5 Upload: create Model -> register Edition -> TUS create session -> PATCH upload file -> poll until Uploaded  \n6 Purge the test device  \n7 Deploy this model edition to the device  \n8 Poll until the device reports DEPLOYED  \n9 Query by device, verify deployed (includes per-device deploymentStartTime, sourced from DeviceDeploymentReported)  \n10 Query by model version, verify deployed  \n11 Delete the deployment from the device  \n12 Verify the device is empty  \n13 Cleanup\n\nVariables are chained inside Postman: modelId (from Create Model) and modelEdition (auto-generated in the pre-request) are fed directly into the upload, deploy, query and delete steps.\n\n## Before you run\n\n1. Set the collection/environment variables: `apibaseurl` (the `.../api/v1` base), `baseUrl` (host root, used by the `/api/internal/.../purge` calls), `tusd`, `accessToken`, `org_id`, `deviceId`.\n    \n2. `fileName` / `fileSize` / `fileHash` default to scripts/test-model.bin (3 MB fixed file; the hash is precomputed and hardcoded, no need to recompute on each run).\n    \n3. In '4. TUS Upload File (PATCH)', under Body -> binary, select scripts/test-model.bin (newman resolves the relative path via --working-dir).\n    \n4. modelEdition is auto-generated as a unique value by the collection pre-request script on every run (avoids edition 409 conflicts and keeps the flow re-runnable).\n    \n\n## Must be run with Collection Runner / newman\n\nSteps 5, 8, and 12 use `setNextRequest` to poll automatically; running them individually by hand will not auto-retry. Recommend adding `--delay-request 2000` to newman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "219282"
+  },
+  "item": [
+    {
+      "name": "Create Model",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  const id = pm.response.json().modelId;",
+              "  pm.collectionVariables.set('modelId', id);",
+              "  pm.test('201 Created, modelId set', () => pm.expect(id).to.be.a('string').and.not.empty);",
+              "  console.log('modelId =', id);",
+              "} else if (pm.response.code === 409) {",
+              "  pm.test('409 Conflict (model exists, will List)', () => true);",
+              "  postman.setNextRequest('List Models (find existing)');",
+              "} else {",
+              "  pm.test('Create Model failed', () => pm.expect.fail('HTTP ' + pm.response.code + ' ' + pm.response.text()));",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"modelName\": \"{{modelName}}\"\n}"
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Models",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const name = pm.variables.get('modelName');",
+              "const items = (pm.response.json().items) || [];",
+              "const found = items.find(m => m.modelName === name);",
+              "pm.test('Found existing model', () => pm.expect(found, 'model ' + name).to.exist);",
+              "if (found) {",
+              "  pm.collectionVariables.set('modelId', found.modelId);",
+              "  console.log('modelId =', found.modelId);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models?maxResultCount=1000",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models"
+          ],
+          "query": [
+            {
+              "key": "maxResultCount",
+              "value": "1000"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Register New Model Edition",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const b = pm.response.json();",
+              "pm.collectionVariables.set('uploadId', b.uploadId);",
+              "const tusFallback = `/api/v1/orgs/${pm.variables.get('org_id')}/ai-models/${pm.variables.get('modelId')}/editions/${pm.variables.get('modelEdition')}/uploads`;",
+              "pm.collectionVariables.set('tusEndpoint', b.tusEndpoint || tusFallback);",
+              "if (b.uploadId) { pm.collectionVariables.set('uploadIdB64', btoa(b.uploadId)); }",
+              "pm.collectionVariables.set('pollCount', 0);",
+              "pm.test('Has uploadId', () => pm.expect(b.uploadId).to.be.a('string').and.not.empty);",
+              "console.log('uploadId =', b.uploadId, '| tusEndpoint =', pm.variables.get('tusEndpoint'));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"edition\": \"{{modelEdition}}\",\n  \"fileName\": \"{{fileName}}\",\n  \"fileSize\": {{fileSize}},\n  \"fileHash\": \"{{fileHash}}\"\n}"
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models",
+            "{{modelId}}",
+            "editions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Upload Session",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const uid = pm.variables.get('uploadId');",
+              "if (uid) { pm.collectionVariables.set('uploadIdB64', btoa(uid)); }",
+              "else { throw new Error('uploadId empty; run step 2 first'); }"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const loc = pm.response.headers.get('Location');",
+              "if (!loc) { pm.expect.fail('Location header missing'); }",
+              "const tusId = loc.replace(/\\/+$/, '').split('/').pop();",
+              "pm.collectionVariables.set('tusId', tusId);",
+              "pm.test('Has tusId', () => pm.expect(tusId).to.be.a('string').and.not.empty);",
+              "console.log('tusId =', tusId, '| uploadId (business) =', pm.variables.get('uploadId'));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Tus-Resumable",
+            "value": "1.0.0"
+          },
+          {
+            "key": "Upload-Length",
+            "value": "{{fileSize}}"
+          },
+          {
+            "key": "Upload-Metadata",
+            "value": "uploadId {{uploadIdB64}}"
+          }
+        ],
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}/uploads",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models",
+            "{{modelId}}",
+            "editions",
+            "{{modelEdition}}",
+            "uploads"
+          ]
+        },
+        "description": "Create a TUS upload session. tusd triggers the backend pre-create hook; on success it returns 201 with a Location header. The Location's trailing segment is captured as tusId and used to PATCH the bytes."
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Session File",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('204 No Content', () => pm.response.to.have.status(204));",
+              "const off = pm.response.headers.get('Upload-Offset');",
+              "const size = String(pm.variables.get('fileSize'));",
+              "console.log('Upload-Offset =', off, '/ fileSize =', size);",
+              "pm.test('offset reached file size (single PATCH)', () => pm.expect(String(off)).to.eql(size));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Tus-Resumable",
+            "value": "1.0.0"
+          },
+          {
+            "key": "Upload-Offset",
+            "value": "0"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/offset+octet-stream"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": "postman-cloud:///1f16eec4-ebcf-46a0-99a1-1dbe28023a93"
+          }
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}/uploads/{{tusId}}",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models",
+            "{{modelId}}",
+            "editions",
+            "{{modelEdition}}",
+            "uploads",
+            "{{tusId}}"
+          ]
+        },
+        "description": "Transfer the file content to the TUS resource (tusId from the Location header). Under Body -> binary, select scripts/test-model.bin (newman resolves it via --working-dir). After completion, tusd triggers the post-finish hook and the backend begins SHA-256 verification."
+      },
+      "response": []
+    },
+    {
+      "name": "Check Upload Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const status = pm.response.json().status;",
+              "console.log('upload status =', status);",
+              "pm.test('not failed', () => pm.expect(['VerifyFailed', 'UploadFailed']).to.not.include(status));",
+              "if (status === 'Uploaded') {",
+              "  pm.test('Uploaded', () => pm.expect(status).to.eql('Uploaded'));",
+              "} else if (['Pending', 'Uploading', 'Verifying'].includes(status)) {",
+              "  let c = Number(pm.variables.get('pollCount') || 0);",
+              "  const max = Number(pm.variables.get('pollMaxRetries') || 30);",
+              "  if (c < max) {",
+              "    pm.collectionVariables.set('pollCount', c + 1);",
+              "    console.log('status ' + status + ', retry ' + (c + 1) + '/' + max);",
+              "    setTimeout(function () { postman.setNextRequest('Wait Upload Status = Uploaded'); }, 2000);",
+              "  } else {",
+              "    pm.test('TIMEOUT waiting for Uploaded', () => pm.expect.fail('last status ' + status));",
+              "    postman.setNextRequest(null);",
+              "  }",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}/uploads/{{uploadId}}/status",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models",
+            "{{modelId}}",
+            "editions",
+            "{{modelEdition}}",
+            "uploads",
+            "{{uploadId}}",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Deploy Model File",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 202', () => pm.response.to.have.status(202));",
+              "var j = pm.response.json();",
+              "pm.collectionVariables.set('createdDeploymentId', j.modelDeploymentId);",
+              "pm.test('Has modelDeploymentId', () => pm.expect(j.modelDeploymentId).to.be.a('string').and.not.empty);",
+              "pm.test('Status is IN_PROGRESS', () => pm.expect(j.status).to.eql('IN_PROGRESS'));",
+              "pm.test('ModelId matches', () => pm.expect(j.modelId).to.eql(pm.variables.get('modelId')));",
+              "pm.test('Version matches', () => pm.expect(j.edition).to.eql(pm.variables.get('modelEdition')));",
+              "pm.test('Targets has 1 device', () => pm.expect(j.targets).to.have.lengthOf(1));",
+              "pm.test('Target device matches', () => {",
+              "    pm.expect(j.targets[0].deviceId).to.eql(pm.variables.get('deviceId'));",
+              "    pm.expect(j.targets[0].state).to.eql('SENT');",
+              "    pm.expect(j.targets[0].edgeFilePath).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.test('Has createdAt', () => pm.expect(new Date(j.createdAt).getTime()).to.be.above(0));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"targets\": [\n    {\n      \"deviceIdList\": [\n        \"000c29e353e9\"\n      ],\n      \"tasks\": [\n        {\n          \"preCmd\": {\n            \"action\": \"CHECK_DISK_USAGE\",\n            \"params\": {\n              \"maxUsagePercent\": \"95\"\n            }\n          },\n          \"validateCmd\": {\n            \"action\": \"FILE_SIZE_VERIFY\",\n            \"params\": {}\n          },\n          \"applyCmd\": {\n            \"action\": \"ATOMIC_SWAP_AND_RESTART_CONTAINER\",\n            \"params\": {\n               \"name\": \"container1\"\n             }\n          },\n          \"postCmd\": {\n            \"action\": \"HEALTH_CHECK_FILE_EXISTS\",\n            \"params\": {}\n          }\n        }\n      ]\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}:deploy",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models",
+            "{{modelId}}",
+            "editions",
+            "{{modelEdition}}:deploy"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Device Deployed Models",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "var j = pm.response.json();",
+              "pm.test('Has paged structure', () => {",
+              "    pm.expect(j).to.have.property('items');",
+              "    pm.expect(j).to.have.property('totalCount');",
+              "    pm.expect(j).to.have.property('totalPages');",
+              "});",
+              "pm.test('totalCount >= 1', () => pm.expect(j.totalCount).to.be.at.least(1));",
+              "var item = j.items.find(function(i){ return i.modelDeploymentId === pm.variables.get('createdDeploymentId'); }) || j.items[0];",
+              "pm.test('Item structure', () => {",
+              "    pm.expect(item).to.have.property('modelDeploymentId');",
+              "    pm.expect(item).to.have.property('modelName');",
+              "    pm.expect(item).to.have.property('edition');",
+              "    pm.expect(item).to.have.property('state');",
+              "    pm.expect(item).to.have.property('deviceId');",
+              "    pm.expect(item).to.have.property('edgeFilePath');",
+              "    pm.expect(item).to.have.property('deploymentStartTime');",
+              "});",
+              "pm.test('edition matches uploaded version', () => pm.expect(item.edition).to.eql(pm.variables.get('modelEdition')));",
+              "pm.test('deploymentStartTime is set (from device report)', () => pm.expect(new Date(item.deploymentStartTime).getTime()).to.be.above(0));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}/ai-models?maxResultCount=10&skipCount=0",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}",
+            "ai-models"
+          ],
+          "query": [
+            {
+              "key": "maxResultCount",
+              "value": "10"
+            },
+            {
+              "key": "skipCount",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Model Deployment Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "var j = pm.response.json();",
+              "pm.test('totalCount >= 1', () => pm.expect(j.totalCount).to.be.at.least(1));",
+              "var item = j.items.find(function(i){ return i.deviceId === pm.variables.get('deviceId'); });",
+              "pm.test('this device present', () => pm.expect(item, 'device ' + pm.variables.get('deviceId')).to.exist);",
+              "pm.test('Item structure', () => {",
+              "    pm.expect(item).to.have.property('deviceId');",
+              "    pm.expect(item).to.have.property('state');",
+              "    pm.expect(item).to.have.property('edgeFilePath');",
+              "    pm.expect(item).to.have.property('deploymentStartTime');",
+              "    pm.expect(item).to.have.property('lastTransitionTime');",
+              "});",
+              "pm.test('state DEPLOYED', () => pm.expect(item.state).to.eql('DEPLOYED'));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}/deployments?maxResultCount=10&skipCount=0",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models",
+            "{{modelId}}",
+            "editions",
+            "{{modelEdition}}",
+            "deployments"
+          ],
+          "query": [
+            {
+              "key": "maxResultCount",
+              "value": "10"
+            },
+            {
+              "key": "skipCount",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Undeploy at Device",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 202 Accepted', () => pm.response.to.have.status(202));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/devices/{{deviceId}}/ai-models/{{modelId}}/editions/{{modelEdition}}",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "devices",
+            "{{deviceId}}",
+            "ai-models",
+            "{{modelId}}",
+            "editions",
+            "{{modelEdition}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Model File",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "ai-models",
+            "{{modelId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          "// Generate a unique model name + edition once per run so create never collides",
+          "// (avoids the AppAiModels unique-name constraint, incl. soft-deleted ghosts) and",
+          "// the whole flow is re-runnable.",
+          "if (!pm.collectionVariables.get('runStamp')) {",
+          "    var t = String(Date.now());",
+          "    pm.collectionVariables.set('runStamp', t);",
+          "    pm.collectionVariables.set('modelEdition', '1.0.' + t);",
+          "    var base = (pm.collectionVariables.get('modelName') || 'postman-flow-test').replace(/-\\d{10,}$/, '');",
+          "    pm.collectionVariables.set('modelName', base + '-' + t);",
+          "    console.log('Run model =', pm.collectionVariables.get('modelName'), '| edition =', pm.collectionVariables.get('modelEdition'));",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "tusd",
+      "value": "http://localhost:44080"
+    },
+    {
+      "key": "modelName",
+      "value": "postman-flow-test"
+    },
+    {
+      "key": "fileName",
+      "value": ""
+    },
+    {
+      "key": "fileSize",
+      "value": ""
+    },
+    {
+      "key": "fileHash",
+      "value": ""
+    },
+    {
+      "key": "pollCount",
+      "value": ""
+    },
+    {
+      "key": "pollMaxRetries",
+      "value": ""
+    },
+    {
+      "key": "runStamp",
+      "value": ""
+    },
+    {
+      "key": "modelId",
+      "value": ""
+    },
+    {
+      "key": "modelEdition",
+      "value": ""
+    },
+    {
+      "key": "uploadId",
+      "value": ""
+    },
+    {
+      "key": "tusId",
+      "value": ""
+    },
+    {
+      "key": "uploadIdB64",
+      "value": ""
+    },
+    {
+      "key": "createdDeploymentId",
+      "value": ""
+    },
+    {
+      "key": "tusEndpoint",
+      "value": ""
+    },
+    {
+      "key": "pollStartTime",
+      "value": ""
+    },
+    {
+      "key": "delPollStart",
+      "value": ""
+    }
+  ]
+}
