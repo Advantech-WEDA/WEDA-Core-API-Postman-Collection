@@ -11,6 +11,7 @@ This Postman collection provides ready-to-use API requests for the **WEDA platfo
 - ✅ Container Stack Deployment
 - ✅ Telemetry Data Collection
 - ✅ Tunnel Management for Remote Access
+- ✅ AI Model Management
 
 ---
 
