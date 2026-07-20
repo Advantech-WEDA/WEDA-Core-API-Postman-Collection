@@ -176,12 +176,14 @@
           "script": {
             "exec": [
               "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "const biz = pm.variables.get('uploadId');",
               "const loc = pm.response.headers.get('Location');",
               "if (!loc) { pm.expect.fail('Location header missing'); }",
-              "const tusId = loc.replace(/\\/+$/, '').split('/').pop();",
-              "pm.collectionVariables.set('tusId', tusId);",
-              "pm.test('Has tusId', () => pm.expect(tusId).to.be.a('string').and.not.empty);",
-              "console.log('tusId =', tusId, '| uploadId (business) =', pm.variables.get('uploadId'));"
+              "const uploadId = loc.replace(/\\/+$/, '').split('/').pop();",
+              "pm.test('Location uploadId matches business uploadId', () => pm.expect(uploadId).to.eql(biz));",
+              "pm.collectionVariables.set('uploadId', uploadId);",
+              "pm.test('Has uploadId', () => pm.expect(uploadId).to.be.a('string').and.not.empty);",
+              "console.log('uploadId =', uploadId);"
             ],
             "type": "text/javascript",
             "packages": {},
@@ -220,7 +222,7 @@
             "uploads"
           ]
         },
-        "description": "Create a TUS upload session. tusd triggers the backend pre-create hook; on success it returns 201 with a Location header. The Location's trailing segment is captured as tusId and used to PATCH the bytes."
+        "description": "Create a TUS upload session. tusd triggers the backend pre-create hook; on success it returns 201 with a Location header. The Location's trailing segment is the uploadId (pure UUID, same as the business uploadId) and is used to PATCH the bytes."
       },
       "response": []
     },
@@ -266,7 +268,7 @@
           }
         },
         "url": {
-          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}/uploads/{{tusId}}",
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}/uploads/{{uploadId}}",
           "host": [
             "{{apibaseurl}}"
           ],
@@ -278,10 +280,10 @@
             "editions",
             "{{modelEdition}}",
             "uploads",
-            "{{tusId}}"
+            "{{uploadId}}"
           ]
         },
-        "description": "Transfer the file content to the TUS resource (tusId from the Location header). Under Body -> binary, select scripts/test-model.bin (newman resolves it via --working-dir). After completion, tusd triggers the post-finish hook and the backend begins SHA-256 verification."
+        "description": "Transfer the file content to the TUS resource (uploadId from the Location header). Under Body -> binary, select scripts/test-model.bin (newman resolves it via --working-dir). After completion, tusd triggers the post-finish hook and the backend begins SHA-256 verification."
       },
       "response": []
     },
@@ -654,10 +656,6 @@
     },
     {
       "key": "uploadId",
-      "value": ""
-    },
-    {
-      "key": "tusId",
       "value": ""
     },
     {
