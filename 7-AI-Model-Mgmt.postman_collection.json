@@ -378,7 +378,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"targets\": [\n    {\n      \"deviceIdList\": [\n        \"000c29e353e9\"\n      ],\n      \"tasks\": [\n        {\n          \"preCmd\": {\n            \"action\": \"CHECK_DISK_USAGE\",\n            \"params\": {\n              \"maxUsagePercent\": \"95\"\n            }\n          },\n          \"validateCmd\": {\n            \"action\": \"FILE_SIZE_VERIFY\",\n            \"params\": {}\n          },\n          \"applyCmd\": {\n            \"action\": \"ATOMIC_SWAP_AND_RESTART_CONTAINER\",\n            \"params\": {\n               \"name\": \"container1\"\n             }\n          },\n          \"postCmd\": {\n            \"action\": \"HEALTH_CHECK_FILE_EXISTS\",\n            \"params\": {}\n          }\n        }\n      ]\n    }\n  ]\n}"
+          "raw": "{\n  \"targets\": [\n    {\n      \"deviceIdList\": [\n        \"{{deviceId}}\"\n      ],\n      \"tasks\": [\n        {\n          \"preCmd\": {\n            \"action\": \"CHECK_DISK_USAGE\",\n            \"params\": {\n              \"maxUsagePercent\": \"95\"\n            }\n          },\n          \"validateCmd\": {\n            \"action\": \"FILE_SIZE_VERIFY\",\n            \"params\": {}\n          },\n          \"applyCmd\": {\n            \"action\": \"ATOMIC_SWAP_AND_RESTART_CONTAINER\",\n            \"params\": {\n               \"name\": \"container1\"\n             }\n          },\n          \"postCmd\": {\n            \"action\": \"HEALTH_CHECK_FILE_EXISTS\",\n            \"params\": {}\n          }\n        }\n      ]\n    }\n  ]\n}"
         },
         "url": {
           "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}:deploy",
@@ -616,10 +616,6 @@
     }
   ],
   "variable": [
-    {
-      "key": "tusd",
-      "value": "http://localhost:44080"
-    },
     {
       "key": "modelName",
       "value": "postman-flow-test"
