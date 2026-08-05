@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "70ec6edd-8d41-4160-b078-8b1e65da91d8",
+    "_postman_id": "b659509d-3307-4262-993e-e33fce144579",
     "name": "7-AiModelMgmt",
     "description": "End-to-end full flow (runs in a single newman / Collection Runner pass):  \n1-5 Upload: create Model -> register Edition -> TUS create session -> PATCH upload file -> poll until Uploaded  \n6 Purge the test device  \n7 Deploy this model edition to the device  \n8 Poll until the device reports DEPLOYED  \n9 Query by device, verify deployed (includes per-device deploymentStartTime, sourced from DeviceDeploymentReported)  \n10 Query by model version, verify deployed  \n11 Delete the deployment from the device  \n12 Verify the device is empty  \n13 Cleanup\n\nVariables are chained inside Postman: modelId (from Create Model) and modelEdition (auto-generated in the pre-request) are fed directly into the upload, deploy, query and delete steps.\n\n## Before you run\n\n1. Set the collection/environment variables: `apibaseurl` (the `.../api/v1` base), `baseUrl` (host root, used by the `/api/internal/.../purge` calls), `tusd`, `accessToken`, `org_id`, `deviceId`.\n    \n2. `fileName` / `fileSize` / `fileHash` default to scripts/test-model.bin (3 MB fixed file; the hash is precomputed and hardcoded, no need to recompute on each run).\n    \n3. In '4. TUS Upload File (PATCH)', under Body -> binary, select scripts/test-model.bin (newman resolves the relative path via --working-dir).\n    \n4. modelEdition is auto-generated as a unique value by the collection pre-request script on every run (avoids edition 409 conflicts and keeps the flow re-runnable).\n    \n\n## Must be run with Collection Runner / newman\n\nSteps 5, 8, and 12 use `setNextRequest` to poll automatically; running them individually by hand will not auto-retry. Recommend adding `--delay-request 2000` to newman.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -59,7 +59,7 @@
       "response": []
     },
     {
-      "name": "List Models",
+      "name": "List Models for an Organization",
       "event": [
         {
           "listen": "test",
@@ -105,7 +105,7 @@
       "response": []
     },
     {
-      "name": "Register New Model Edition",
+      "name": "Register New Edition of an Existing Model",
       "event": [
         {
           "listen": "test",
@@ -156,7 +156,7 @@
       "response": []
     },
     {
-      "name": "Create Upload Session",
+      "name": "Create a resumable upload",
       "event": [
         {
           "listen": "prerequest",
@@ -227,7 +227,7 @@
       "response": []
     },
     {
-      "name": "Upload Session File",
+      "name": "Upload a file chunk",
       "event": [
         {
           "listen": "test",
@@ -264,7 +264,7 @@
         "body": {
           "mode": "file",
           "file": {
-            "src": "postman-cloud:///1f16eec4-ebcf-46a0-99a1-1dbe28023a93"
+            "src": ""
           }
         },
         "url": {
@@ -343,7 +343,7 @@
       "response": []
     },
     {
-      "name": "Deploy Model File",
+      "name": "Create Model Deployment",
       "event": [
         {
           "listen": "test",
@@ -400,7 +400,7 @@
       "response": []
     },
     {
-      "name": "Device Deployed Models",
+      "name": "List All AI Models for a Specific Device",
       "event": [
         {
           "listen": "test",
@@ -461,7 +461,7 @@
       "response": []
     },
     {
-      "name": "List Model Deployment Status",
+      "name": "List Devices for a Specific Model Edition",
       "event": [
         {
           "listen": "test",
@@ -519,7 +519,7 @@
       "response": []
     },
     {
-      "name": "Undeploy at Device",
+      "name": "Delete Model File from a Specific Device",
       "event": [
         {
           "listen": "test",
@@ -554,7 +554,7 @@
       "response": []
     },
     {
-      "name": "Delete Model File",
+      "name": "Delete a Model and All Its Editions",
       "request": {
         "method": "DELETE",
         "header": [],
