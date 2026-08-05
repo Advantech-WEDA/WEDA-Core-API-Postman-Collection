@@ -66,7 +66,60 @@
       "response": []
     },
     {
-      "name": "Data Points Historical Get",
+      "name": "Data Stream List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 200', () => pm.expect(pm.response.code).to.eql(200));",
+              "if (pm.response.code === 200) {",
+              "  const responseJson = pm.response.json();",
+              "  const items = responseJson.items;",
+              "  if (items && items.length > 0) {",
+              "    const target = items.find(i => i.dataStreamName === 'cpu_usage') || items[0];",
+              "    pm.environment.set('dataStreamId', target.dataStreamId);",
+              "    pm.environment.set('dataStreamName', target.dataStreamName);",
+              "  }",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/devices/{{deviceId}}/data-streams?skipCount=0&maxResultCount=10",
+          "host": [
+            "{{apibaseurl}}"
+          ],
+          "path": [
+            "orgs",
+            "{{org_id}}",
+            "devices",
+            "{{deviceId}}",
+            "data-streams"
+          ],
+          "query": [
+            {
+              "key": "skipCount",
+              "value": "0"
+            },
+            {
+              "key": "maxResultCount",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Data Stream Historical Values Get",
       "event": [
         {
           "listen": "prerequest",
@@ -88,15 +141,17 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{apibaseurl}}/devices/{{deviceId}}/data-objects/{{dataObjectId}}/values/historical?start={{startTime}}&end={{endTime}}&limit=1000",
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/devices/{{deviceId}}/data-streams/{{dataStreamId}}/values/historical?start={{startTime}}&end={{endTime}}&limit=1000",
           "host": [
             "{{apibaseurl}}"
           ],
           "path": [
+            "orgs",
+            "{{org_id}}",
             "devices",
             "{{deviceId}}",
-            "data-objects",
-            "{{dataObjectId}}",
+            "data-streams",
+            "{{dataStreamId}}",
             "values",
             "historical"
           ],
@@ -119,19 +174,22 @@
       "response": []
     },
     {
-      "name": "Data Points Latest Get by User Token",
+      "name": "Data Stream Latest Value Get",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{apibaseurl}}/devices/{{deviceId}}/data-objects/values/latest",
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/devices/{{deviceId}}/data-streams/{{dataStreamId}}/values/latest",
           "host": [
             "{{apibaseurl}}"
           ],
           "path": [
+            "orgs",
+            "{{org_id}}",
             "devices",
             "{{deviceId}}",
-            "data-objects",
+            "data-streams",
+            "{{dataStreamId}}",
             "values",
             "latest"
           ]
@@ -140,51 +198,22 @@
       "response": []
     },
     {
-      "name": "Data Points Latest Get by Client Token",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{cc_access_token}}",
-              "type": "string"
-            }
-          ]
-        },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{apibaseurl}}/devices/{{deviceId}}/data-objects/values/latest",
-          "host": [
-            "{{apibaseurl}}"
-          ],
-          "path": [
-            "devices",
-            "{{deviceId}}",
-            "data-objects",
-            "values",
-            "latest"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Data Object Blob Get",
+      "name": "Data Stream Blob Get",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{apibaseurl}}/devices/{{deviceId}}/data-objects/{{dataObjectId}}/blobs/{{blobKey}}",
+          "raw": "{{apibaseurl}}/orgs/{{org_id}}/devices/{{deviceId}}/data-streams/{{dataStreamId}}/blobs/{{blobKey}}",
           "host": [
             "{{apibaseurl}}"
           ],
           "path": [
+            "orgs",
+            "{{org_id}}",
             "devices",
             "{{deviceId}}",
-            "data-objects",
-            "{{dataObjectId}}",
+            "data-streams",
+            "{{dataStreamId}}",
             "blobs",
             "{{blobKey}}"
           ]
