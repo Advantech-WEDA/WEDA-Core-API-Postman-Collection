@@ -1,17 +1,17 @@
 {
   "info": {
-    "_postman_id": "1cc95b83-4f75-475f-a0dc-38b5a378d371",
-    "name": "4-Contaienr-Stack",
+    "_postman_id": "97a60d1c-6b38-4ae8-8b88-2f1989b1a245",
+    "name": "4-Container-Stack",
     "description": "Integration test collection for EdgeSync Container Management API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "4539553"
+    "_exporter_id": "219282"
   },
   "item": [
     {
-      "name": "Registry Mgmt",
+      "name": "Registry Config Mgmt",
       "item": [
         {
-          "name": "Create Registry (AWS ECR)",
+          "name": "Create Registry Config (Custom Registry)",
           "event": [
             {
               "listen": "test",
@@ -47,7 +47,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"registryName\": \"test-ecr-registry\",\n  \"registryUrl\": \"https://registry.dev.company.com\",\n  \"registryCredentials\": {\n    \"registryType\": \"AwsECR\",\n    \"accessKey\": \"AKIA2V7EXAMPLE123456\",\n    \"accessSecretKey\": \"8xJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLE7\",\n    \"region\": \"ap-southeast-1\"\n  }\n}"
+              "raw": "{\n  \"registryName\": \"my-harbor\",\n  \"registryUrl\": \"https://harbor.company.com\",\n  \"registryCredentials\": {\n    \"registryType\": \"Custom\",\n    \"username\": \"harbor_admin\",\n    \"userPassword\": \"Harbor_Password_123\"\n  }\n}"
             },
             "url": {
               "raw": "{{apibaseurl}}/orgs/{{org_id}}/containers/registries",
@@ -66,7 +66,7 @@
           "response": []
         },
         {
-          "name": "Get All Registries",
+          "name": "Get All Registry Configs",
           "event": [
             {
               "listen": "test",
@@ -124,7 +124,7 @@
           "response": []
         },
         {
-          "name": "Get Registry by ID",
+          "name": "Get Registry Config by ID",
           "event": [
             {
               "listen": "test",
@@ -167,7 +167,7 @@
           "response": []
         },
         {
-          "name": "Update Registry",
+          "name": "Update Registry Config",
           "event": [
             {
               "listen": "test",
@@ -219,7 +219,7 @@
           "response": []
         },
         {
-          "name": "Delete Registry",
+          "name": "Delete Registry Config",
           "event": [
             {
               "listen": "test",
@@ -267,7 +267,7 @@
       "name": "Stack Mgmt & Deployment",
       "item": [
         {
-          "name": "Check Stack Name Availability",
+          "name": "Check Stack Name Availability in Org",
           "event": [
             {
               "listen": "test",
@@ -320,7 +320,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs?stackName=integration-test-stack&maxResultCount=1",
+              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs?stackName={{finalStackName}}&maxResultCount=1",
               "host": [
                 "{{apibaseurl}}"
               ],
@@ -332,7 +332,7 @@
               "query": [
                 {
                   "key": "stackName",
-                  "value": "integration-test-stack"
+                  "value": "{{finalStackName}}"
                 },
                 {
                   "key": "maxResultCount",
@@ -424,7 +424,7 @@
           "response": []
         },
         {
-          "name": "Get Stacks",
+          "name": "Get Stacks by Organization",
           "event": [
             {
               "listen": "test",
@@ -489,48 +489,6 @@
               ]
             },
             "description": "Retrieves a paginated list of container stacks, sorted by creation time in descending order."
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Deployments under this device",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 204\", function () {",
-                  "    pm.response.to.have.status(204);",
-                  "});",
-                  "",
-                  "pm.test(\"Deployment deletion successful\", function () {",
-                  "    // 204 No Content indicates successful deletion",
-                  "    pm.expect(pm.response.status).to.equal('No Content');",
-                  "    console.log('Deployment successfully deleted');",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks",
-              "host": [
-                "{{apibaseurl}}"
-              ],
-              "path": [
-                "devices",
-                "{{deviceId}}",
-                "docker",
-                "stacks"
-              ]
-            },
-            "description": "Deletes the deployment from the device. This removes the stack from the device but keeps the stack definition."
           },
           "response": []
         },
@@ -627,85 +585,6 @@
           "response": []
         },
         {
-          "name": "Query Deployment Result",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Response contains deployment info\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('items');",
-                  "    pm.expect(jsonData.items).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test(\"Deployment status is available\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.items.length > 0) {",
-                  "        var deployment = jsonData.items[0];",
-                  "        pm.expect(deployment).to.have.property('status');",
-                  "        pm.expect(deployment).to.have.property('deviceId');",
-                  "        pm.expect(deployment).to.have.property('stackName');",
-                  "        ",
-                  "        // Verify it's our deployment",
-                  "        var deviceId = pm.collectionVariables.get('deviceId');",
-                  "        var expectedStackName = pm.collectionVariables.get('finalStackName');",
-                  "        pm.expect(deployment.deviceId).to.eql(deviceId);",
-                  "        pm.expect(deployment.stackName).to.eql(expectedStackName);",
-                  "    }",
-                  "});",
-                  "",
-                  "pm.test(\"Deployment is active\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.items.length > 0) {",
-                  "        var deployment = jsonData.items[0];",
-                  "        pm.expect(deployment.active).to.be.true;",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}/deployments?maxResultCount=10&skipCount=0",
-              "host": [
-                "{{apibaseurl}}"
-              ],
-              "path": [
-                "orgs",
-                "{{org_id}}",
-                "stack-configs",
-                "{{stackConfigId}}",
-                "revisions",
-                "{{stackRevisionId}}",
-                "deployments"
-              ],
-              "query": [
-                {
-                  "key": "maxResultCount",
-                  "value": "10"
-                },
-                {
-                  "key": "skipCount",
-                  "value": "0"
-                }
-              ]
-            },
-            "description": "Queries the deployment result for the deployed stack. Filters by stackRevisionId to get deployments for our specific stack."
-          },
-          "response": []
-        },
-        {
           "name": "Get Specific Stack Details",
           "event": [
             {
@@ -767,193 +646,7 @@
           "response": []
         },
         {
-          "name": "Wait for Deployment Running Status",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Initialize poll start time if not set",
-                  "if (!pm.collectionVariables.get('pollStartTime')) {",
-                  "    pm.collectionVariables.set('pollStartTime', Date.now());",
-                  "    pm.collectionVariables.set('pollAttempts', 0);",
-                  "    console.log('Starting deployment status polling...');",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Deployment status polling\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('items');",
-                  "    ",
-                  "    var startTime = pm.collectionVariables.get('pollStartTime');",
-                  "    var currentTime = Date.now();",
-                  "    var elapsedTime = (currentTime - startTime) / 1000; // in seconds",
-                  "    var attempts = pm.collectionVariables.get('pollAttempts') || 0;",
-                  "    pm.collectionVariables.set('pollAttempts', attempts + 1);",
-                  "    ",
-                  "    console.log('Elapsed time: ' + elapsedTime.toFixed(1) + 's, Attempt: ' + (attempts + 1));",
-                  "    ",
-                  "    if (jsonData.items.length > 0) {",
-                  "        var deployment = jsonData.items[0];",
-                  "        pm.expect(deployment).to.have.property('status');",
-                  "        ",
-                  "        var status = deployment.status;",
-                  "        console.log('Current deployment status: ' + status);",
-                  "        ",
-                  "        if (status.includes('running')) {",
-                  "            console.log('Deployment is running with 1 container after ' + elapsedTime.toFixed(1) + ' seconds');",
-                  "            pm.collectionVariables.set('deploymentReady', 'true');",
-                  "            // Clear polling variables",
-                  "            pm.collectionVariables.unset('pollStartTime');",
-                  "            pm.collectionVariables.unset('pollAttempts');",
-                  "            pm.test('Deployment status is running(1)', function() {",
-                  "                pm.expect(status).to.include('running');",
-                  "            });",
-                  "            // Store deployment details for deletion",
-                  "            pm.collectionVariables.set('deploymentId', deployment.deploymentId);",
-                  "        } else if (elapsedTime >= 90) {",
-                  "            // Timeout after 90 seconds",
-                  "            console.log('Timeout: Deployment did not reach running(1) status within 90 seconds');",
-                  "            console.log('Final status: ' + status);",
-                  "            // Clear polling variables",
-                  "            pm.collectionVariables.unset('pollStartTime');",
-                  "            pm.collectionVariables.unset('pollAttempts');",
-                  "            pm.test('Deployment timeout - did not reach running(1) within 90 seconds', function() {",
-                  "                pm.expect.fail('Timeout: Final status was \"' + status + '\" after 90 seconds');",
-                  "            });",
-                  "        } else {",
-                  "            // Continue polling",
-                  "            console.log('Deployment still in progress, status: ' + status + ' (will retry in 2 seconds)');",
-                  "            pm.collectionVariables.set('deploymentReady', 'false');",
-                  "            // Schedule next request after 2 seconds",
-                  "            setTimeout(function() {",
-                  "                postman.setNextRequest('Wait for Deployment Running Status');",
-                  "            }, 2000);",
-                  "            pm.test('Deployment still in progress (continuing to poll)', function() {",
-                  "                pm.expect(status).to.not.include('running');",
-                  "            });",
-                  "        }",
-                  "    } else {",
-                  "        console.log('No deployments found for the stack');",
-                  "        // Clear polling variables",
-                  "        pm.collectionVariables.unset('pollStartTime');",
-                  "        pm.collectionVariables.unset('pollAttempts');",
-                  "        pm.test('No deployments found', function() {",
-                  "            pm.expect.fail('No deployments found for the stack');",
-                  "        });",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}/deployments?maxResultCount=10&skipCount=0",
-              "host": [
-                "{{apibaseurl}}"
-              ],
-              "path": [
-                "orgs",
-                "{{org_id}}",
-                "stack-configs",
-                "{{stackConfigId}}",
-                "revisions",
-                "{{stackRevisionId}}",
-                "deployments"
-              ],
-              "query": [
-                {
-                  "key": "maxResultCount",
-                  "value": "10"
-                },
-                {
-                  "key": "skipCount",
-                  "value": "0"
-                }
-              ]
-            },
-            "description": "Waits for deployment to reach 'running(1)' status. This step should be retried until the status shows the container is running successfully."
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Deployments (Org Level)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Response has deployment list\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('totalCount');",
-                  "    pm.expect(jsonData).to.have.property('items');",
-                  "    pm.expect(jsonData.items).to.be.an('array');",
-                  "    console.log('Total deployments: ' + jsonData.totalCount);",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/deployments?maxResultCount=100&skipCount=0&sorting=creationTime desc",
-              "host": [
-                "{{apibaseurl}}"
-              ],
-              "path": [
-                "orgs",
-                "{{org_id}}",
-                "stack-configs",
-                "deployments"
-              ],
-              "query": [
-                {
-                  "key": "maxResultCount",
-                  "value": "100"
-                },
-                {
-                  "key": "skipCount",
-                  "value": "0"
-                },
-                {
-                  "key": "sorting",
-                  "value": "creationTime desc"
-                }
-              ]
-            },
-            "description": "Gets all stack deployments at the organization level with pagination and sorting support."
-          },
-          "response": []
-        },
-        {
-          "name": "Get Stacks Deployments under Device",
+          "name": "List Stacks Deployments in Device",
           "event": [
             {
               "listen": "test",
@@ -1015,7 +708,7 @@
           "response": []
         },
         {
-          "name": "Delete Deployment",
+          "name": "Clear Device Containers",
           "event": [
             {
               "listen": "test",
@@ -1057,74 +750,7 @@
           "response": []
         },
         {
-          "name": "Confirm Deployment Deletion",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Deployment is no longer active\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('items');",
-                  "    ",
-                  "    // After deletion, should either have no items or all items should be inactive",
-                  "    var activeDeployments = jsonData.items.filter(item => item.active === true);",
-                  "    pm.expect(activeDeployments.length).to.equal(0);",
-                  "    ",
-                  "    if (jsonData.items.length === 0) {",
-                  "        console.log('No deployments found - deployment successfully removed');",
-                  "    } else {",
-                  "        console.log('Deployment exists but is inactive - successfully undeployed');",
-                  "        jsonData.items.forEach(item => {",
-                  "            console.log('Deployment status: ' + item.status + ', Active: ' + item.active);",
-                  "        });",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apibaseurl}}/orgs/{{org_id}}/stack-configs/{{stackConfigId}}/revisions/{{stackRevisionId}}/deployments?maxResultCount=10&skipCount=0",
-              "host": [
-                "{{apibaseurl}}"
-              ],
-              "path": [
-                "orgs",
-                "{{org_id}}",
-                "stack-configs",
-                "{{stackConfigId}}",
-                "revisions",
-                "{{stackRevisionId}}",
-                "deployments"
-              ],
-              "query": [
-                {
-                  "key": "maxResultCount",
-                  "value": "10"
-                },
-                {
-                  "key": "skipCount",
-                  "value": "0"
-                }
-              ]
-            },
-            "description": "Confirms that the deployment has been successfully deleted by checking that no active deployments exist for this stack."
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Stack",
+          "name": "Delete Stack Revision",
           "event": [
             {
               "listen": "test",
@@ -1238,7 +864,7 @@
       "name": "Stack Command",
       "item": [
         {
-          "name": "Execute Stack Command (Pause)",
+          "name": "Manage Container State (Pause)",
           "event": [
             {
               "listen": "test",
@@ -1293,127 +919,7 @@
           "response": []
         },
         {
-          "name": "Query Command Execution Logs",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Response has paginated structure\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('items');",
-                  "    pm.expect(jsonData).to.have.property('totalCount');",
-                  "    pm.expect(jsonData.items).to.be.an('array');",
-                  "    ",
-                  "    if (jsonData.items.length > 0) {",
-                  "        console.log('Found ' + jsonData.totalCount + ' total command log entries, showing ' + jsonData.items.length + ' items');",
-                  "        jsonData.items.forEach((log, index) => {",
-                  "            console.log('Log ' + (index + 1) + ': ' + log.deviceCmd + ' - ' + log.message);",
-                  "        });",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks/commands/results?stackConfigId={{stackConfigId}}&range=all",
-              "host": [
-                "{{apibaseurl}}"
-              ],
-              "path": [
-                "devices",
-                "{{deviceId}}",
-                "docker",
-                "stacks",
-                "commands",
-                "results"
-              ],
-              "query": [
-                {
-                  "key": "stackConfigId",
-                  "value": "{{stackConfigId}}"
-                },
-                {
-                  "key": "range",
-                  "value": "all"
-                }
-              ]
-            },
-            "description": "Queries command execution results for the stack on the device."
-          },
-          "response": []
-        },
-        {
-          "name": "Query Command Results - Without Range Parameter",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Response has paginated structure (default behavior)\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('items');",
-                  "    pm.expect(jsonData).to.have.property('totalCount');",
-                  "    pm.expect(jsonData.items).to.be.an('array');",
-                  "    ",
-                  "    if (jsonData.items.length > 0) {",
-                  "        console.log('Found ' + jsonData.totalCount + ' total command results (default), showing ' + jsonData.items.length + ' items');",
-                  "        jsonData.items.forEach((log, index) => {",
-                  "            console.log('Result ' + (index + 1) + ': ' + log.deviceCmd + ' - ' + log.message);",
-                  "        });",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apibaseurl}}/devices/{{deviceId}}/docker/stacks/commands/results?stackConfigId={{stackConfigId}}",
-              "host": [
-                "{{apibaseurl}}"
-              ],
-              "path": [
-                "devices",
-                "{{deviceId}}",
-                "docker",
-                "stacks",
-                "commands",
-                "results"
-              ],
-              "query": [
-                {
-                  "key": "stackConfigId",
-                  "value": "{{stackConfigId}}"
-                }
-              ]
-            },
-            "description": "Queries command execution results without range parameter to test default behavior."
-          },
-          "response": []
-        },
-        {
-          "name": "Query Command Results - Latest Only",
+          "name": "Latest Container State Changing Results",
           "event": [
             {
               "listen": "test",
@@ -1475,7 +981,7 @@
           "response": []
         },
         {
-          "name": "Execute Stack Command (Resume)",
+          "name": "Manage Container State  (Resume)",
           "event": [
             {
               "listen": "test",
