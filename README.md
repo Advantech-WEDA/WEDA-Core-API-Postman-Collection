@@ -53,12 +53,12 @@ Download and extract the [WEDA API collection]() package
 
 1. Click **Import** button (top-left)
 2. Choose the file or folder you downloaded
-3. Click **Import**, You should see 6 collections imported in the left sidebar
+3. Click **Import**. You should see 7 collections imported in the left sidebar.
 
 <br />
 **Postman Overview**
 - left side: 
-  - **Collections**: 6 collections containing categorized API requests
+  - **Collections**: 7 collections containing categorized API requests
   - **Environments**: Select `weda-core` environment for API requests
 - main panel:
   - send request and request setting/response details
@@ -102,6 +102,17 @@ Download and extract the [WEDA API collection]() package
    - Test Results tab (validation results)
 
 despite the detail of each API, the most important thing when using WEDA Postman API collection is to use the API in sequential workflows. Please follow the squence of collections to run the APIs, and you can achieve the desired results.
+
+### Running the AI Model Management workflow
+
+The **7-AI-Model-Mgmt** collection uploads a model, deploys it to a device, verifies the deployment, and then cleans up. Before running it with Postman Collection Runner or Newman:
+
+1. Configure the collection variables listed in its description, including `apibaseurl`, `baseUrl`, `tusd`, `accessToken`, `org_id`, and `deviceId`.
+2. Provide your own model file and set the collection variables `fileName`, `fileSize` (exact size in bytes), and `fileHash` (the file's SHA-256 hex digest, 64 characters without a prefix). These values must match the file you upload.
+3. In **Upload a file chunk**, select that same file under **Body → binary**. For Newman, make the file available under `--working-dir` and set the request body's file `src` to its relative path.
+4. The collection generates a unique, v1.2-compatible `modelEdition` automatically. The `containerName` variable defaults to `container1`; change it if the target device uses a different container name.
+
+**Important:** This workflow deploys the model to the target device, activates it by restarting the configured container, and later removes the model deployment during cleanup. Use a test device and confirm that restarting the container and removing this model are safe before running the collection.
 
 ---
 

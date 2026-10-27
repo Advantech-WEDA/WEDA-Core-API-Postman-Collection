@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "b659509d-3307-4262-993e-e33fce144579",
     "name": "7-AiModelMgmt",
-    "description": "End-to-end full flow (runs in a single newman / Collection Runner pass):  \n1-5 Upload: create Model -> register Edition -> TUS create session -> PATCH upload file -> poll until Uploaded  \n6 Purge the test device  \n7 Deploy this model edition to the device  \n8 Poll until the device reports DEPLOYED  \n9 Query by device, verify deployed (includes per-device deploymentStartTime, sourced from DeviceDeploymentReported)  \n10 Query by model version, verify deployed  \n11 Delete the deployment from the device  \n12 Verify the device is empty  \n13 Cleanup\n\nVariables are chained inside Postman: modelId (from Create Model) and modelEdition (auto-generated in the pre-request) are fed directly into the upload, deploy, query and delete steps.\n\n## Before you run\n\n1. Set the collection/environment variables: `apibaseurl` (the `.../api/v1` base), `baseUrl` (host root, used by the `/api/internal/.../purge` calls), `tusd`, `accessToken`, `org_id`, `deviceId`.\n    \n2. `fileName` / `fileSize` / `fileHash` default to scripts/test-model.bin (3 MB fixed file; the hash is precomputed and hardcoded, no need to recompute on each run).\n    \n3. In '4. TUS Upload File (PATCH)', under Body -> binary, select scripts/test-model.bin (newman resolves the relative path via --working-dir).\n    \n4. modelEdition is auto-generated as a unique value by the collection pre-request script on every run (avoids edition 409 conflicts and keeps the flow re-runnable).\n    \n\n## Must be run with Collection Runner / newman\n\nSteps 5, 8, and 12 use `setNextRequest` to poll automatically; running them individually by hand will not auto-retry. Recommend adding `--delay-request 2000` to newman.",
+    "description": "End-to-end full flow (runs in a single newman / Collection Runner pass):  \n1-5 Upload: create Model -> register Edition -> TUS create session -> PATCH upload file -> poll until Uploaded  \n6 Purge the test device  \n7 Deploy this model edition to the device  \n8 Poll until the device reports DEPLOYED  \n9 Query by device, verify deployed (includes per-device deploymentStartTime, sourced from DeviceDeploymentReported)  \n10 Query by model version, verify deployed  \n11 Delete the deployment from the device  \n12 Verify the device is empty  \n13 Cleanup\n\nVariables are chained inside Postman: modelId (from Create Model) and modelEdition (auto-generated in the pre-request) are fed directly into the upload, deploy, query and delete steps.\n\n## Before you run\n\n1. Set the collection/environment variables: `apibaseurl` (the `.../api/v1` base), `baseUrl` (host root, used by the `/api/internal/.../purge` calls), `tusd`, `accessToken`, `org_id`, and `deviceId`.\n    \n2. Provide your own model file. Set `fileName` to its filename, `fileSize` to its exact size in bytes, and `fileHash` to its SHA-256 hex digest (64 characters, without a prefix). These values must match the file you upload.\n        \n3. In '4. TUS Upload File (PATCH)', under Body -> binary, select the same model file. When running with Newman, make the file available under `--working-dir` and set the request body's file `src` to its relative path.\n        \n4. `containerName` defaults to `container1`. Change it to the name of the container on the target device that should be restarted when the model is activated.\n    \n5. `modelEdition` is auto-generated as a unique, API-compatible value by the collection pre-request script on every run (avoids edition 409 conflicts and keeps the flow re-runnable).\n    \n\n## Must be run with Collection Runner / newman\n\nSteps 5, 8, and 12 use `setNextRequest` to poll automatically; running them individually by hand will not auto-retry. Recommend adding `--delay-request 2000` to newman.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "219282"
   },
@@ -107,6 +107,22 @@
     {
       "name": "Register New Edition of an Existing Model",
       "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const fileName = pm.variables.get('fileName');",
+              "const fileSize = pm.variables.get('fileSize');",
+              "const fileHash = pm.variables.get('fileHash');",
+              "if (!fileName || !fileName.trim()) { throw new Error('Set fileName to the name of the model file you will upload.'); }",
+              "if (!/^\\d+$/.test(String(fileSize)) || !Number.isSafeInteger(Number(fileSize)) || Number(fileSize) <= 0) { throw new Error('Set fileSize to the exact positive file size in bytes.'); }",
+              "if (!/^[a-fA-F0-9]{64}$/.test(String(fileHash || ''))) { throw new Error('Set fileHash to the model file SHA-256 hex digest (64 characters, no prefix).'); }"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
         {
           "listen": "test",
           "script": {
@@ -283,7 +299,7 @@
             "{{uploadId}}"
           ]
         },
-        "description": "Transfer the file content to the TUS resource (uploadId from the Location header). Under Body -> binary, select scripts/test-model.bin (newman resolves it via --working-dir). After completion, tusd triggers the post-finish hook and the backend begins SHA-256 verification."
+        "description": "Transfer the file content to the TUS resource (uploadId from the Location header). Under Body -> binary, select the same local model file whose filename, size, and SHA-256 digest are set in the collection variables. For Newman, make the file available under --working-dir and set the request body's file src to its relative path. After completion, tusd triggers the post-finish hook and the backend begins SHA-256 verification."
       },
       "response": []
     },
@@ -380,7 +396,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"targets\": [\n    {\n      \"deviceIdList\": [\n        \"{{deviceId}}\"\n      ],\n      \"tasks\": [\n        {\n          \"preCmd\": {\n            \"action\": \"CHECK_DISK_USAGE\",\n            \"params\": {\n              \"maxUsagePercent\": \"95\"\n            }\n          },\n          \"validateCmd\": {\n            \"action\": \"FILE_SIZE_VERIFY\",\n            \"params\": {}\n          },\n          \"applyCmd\": {\n            \"action\": \"ATOMIC_SWAP_AND_RESTART_CONTAINER\",\n            \"params\": {\n               \"name\": \"container1\"\n             }\n          },\n          \"postCmd\": {\n            \"action\": \"HEALTH_CHECK_FILE_EXISTS\",\n            \"params\": {}\n          }\n        }\n      ]\n    }\n  ]\n}"
+          "raw": "{\n  \"targets\": [\n    {\n      \"deviceIdList\": [\n        \"{{deviceId}}\"\n      ],\n      \"tasks\": [\n        {\n          \"preCmd\": {\n            \"action\": \"NOOP\",\n            \"params\": {}\n          },\n          \"validateCmd\": {\n            \"action\": \"NOOP\",\n            \"params\": {}\n          },\n          \"applyCmd\": {\n            \"action\": \"ATOMIC_SWAP_AND_RESTART_CONTAINER\",\n            \"params\": {\n              \"name\": \"{{containerName}}\"\n            }\n          },\n          \"postCmd\": {\n            \"action\": \"NOOP\",\n            \"params\": {}\n          }\n        }\n      ]\n    }\n  ]\n}"
         },
         "url": {
           "raw": "{{apibaseurl}}/orgs/{{org_id}}/ai-models/{{modelId}}/editions/{{modelEdition}}:deploy",
@@ -597,7 +613,7 @@
           "if (!pm.collectionVariables.get('runStamp')) {",
           "    var t = String(Date.now());",
           "    pm.collectionVariables.set('runStamp', t);",
-          "    pm.collectionVariables.set('modelEdition', '1.0.' + t);",
+          "    pm.collectionVariables.set('modelEdition', '1-0-' + t);",
           "    var base = (pm.collectionVariables.get('modelName') || 'postman-flow-test').replace(/-\\d{10,}$/, '');",
           "    pm.collectionVariables.set('modelName', base + '-' + t);",
           "    console.log('Run model =', pm.collectionVariables.get('modelName'), '| edition =', pm.collectionVariables.get('modelEdition'));",
@@ -624,15 +640,18 @@
     },
     {
       "key": "fileName",
-      "value": ""
+      "value": "",
+      "description": "Filename of the model file selected for the TUS upload."
     },
     {
       "key": "fileSize",
-      "value": ""
+      "value": "",
+      "description": "Exact model file size in bytes."
     },
     {
       "key": "fileHash",
-      "value": ""
+      "value": "",
+      "description": "SHA-256 hex digest of the model file (64 characters, without a prefix)."
     },
     {
       "key": "pollCount",
@@ -677,6 +696,11 @@
     {
       "key": "delPollStart",
       "value": ""
+    },
+    {
+      "key": "containerName",
+      "value": "container1",
+      "description": "Name of the existing container to restart after model activation."
     }
   ]
 }
